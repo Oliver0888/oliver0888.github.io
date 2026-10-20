@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F4EE" />
+<meta name="description" content="DayFlow — a calm, simple planner for your days, tasks, routines, goals and lists. Your day, organised around your life." />
+<title>DayFlow — your day, organised around your life</title>
+<style>
+  /* ============================================================
+     DayFlow design system — tokens
+     ============================================================ */
+  :root{
+    --bg:#F7F4EE;
+    --surface:#FFFFFF;
+    --surface-2:#FCFAF6;
+    --ink:#2A2C28;
+    --muted:#6E6B62;
+    --line:#E7E2D8;
+
+    --forest:#2F4A34;      /* primary */
+    --forest-hover:#263D2A;
+    --forest-soft:#E4EDE3;
+
+    --sage:#6F9A6A;        /* secondary */
+    --sage-soft:#E8F0E5;
+
+    --sky:#4F84BD;
+    --sky-soft:#E7EFF9;
+
+    --lav:#7E6FC4;
+    --lav-soft:#EEEAF9;
+
+    --peach:#C07A45;
+    --peach-soft:#FBEDE1;
+
+    --danger:#B5544F;
+    --danger-soft:#FAEAEA;
+
+    --shadow:0 1px 2px rgba(42,44,40,.04), 0 10px 26px -16px rgba(42,44,40,.28);
+    --shadow-lg:0 18px 50px -20px rgba(42,44,40,.35);
+    --r-lg:20px; --r-md:14px; --r-sm:10px;
+    --sidebar:248px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  button{font:inherit;color:inherit;cursor:pointer}
+  input,textarea,select{font:inherit;color:inherit}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em}
+  a{color:var(--forest)}
+  ::selection{background:var(--sage-soft)}
+  :focus-visible{outline:2px solid var(--forest);outline-offset:2px;border-radius:8px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ---------- Layout ---------- */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:var(--sidebar);flex:0 0 var(--sidebar);
+    background:var(--surface);border-right:1px solid var(--line);
+    padding:22px 16px;position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px}
+  .logo{
+    width:38px;height:38px;border-radius:12px;flex:0 0 38px;
+    background:linear-gradient(135deg,var(--forest),var(--sage) 60%,var(--sky));
+    display:grid;place-items:center;box-shadow:var(--shadow);
+  }
+  .logo svg{width:20px;height:20px}
+  .brand-name{font-size:18px;font-weight:700;letter-spacing:-.02em}
+  .brand-tag{font-size:11.5px;color:var(--muted);margin-top:-2px}
+
+  .nav{display:flex;flex-direction:column;gap:3px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:11px 12px;border:0;background:transparent;border-radius:var(--r-md);
+    font-size:14.5px;font-weight:550;color:#514E47;text-align:left;
+    transition:background .15s,color .15s;
+  }
+  .nav-item svg{width:19px;height:19px;flex:0 0 19px;opacity:.85}
+  .nav-item:hover{background:var(--surface-2)}
+  .nav-item.active{background:var(--forest-soft);color:var(--forest);font-weight:650}
+  .nav-item.active svg{opacity:1}
+  .nav-item .dot{margin-left:auto;font-size:11px;font-weight:700;background:var(--peach-soft);color:#8E5527;border-radius:999px;padding:2px 7px}
+
+  .side-foot{margin-top:auto;padding:10px 4px 4px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+  .side-foot .hint{font-size:11.5px;color:var(--muted);padding:4px 8px 0}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    display:none;align-items:center;gap:11px;
+    padding:14px 18px;position:sticky;top:0;z-index:30;
+    background:rgba(247,244,238,.86);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .content{padding:30px 34px 90px;max-width:1120px;width:100%;margin:0 auto}
+  .page-head{margin-bottom:22px}
+  .page-title{font-size:26px;font-weight:700}
+  .page-sub{color:var(--muted);font-size:13.5px;margin-top:3px}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid transparent;border-radius:999px;padding:10px 17px;
+    font-size:14px;font-weight:600;background:var(--surface-2);
+    transition:transform .08s,background .15s,box-shadow .15s;
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(.975)}
+  .btn svg{width:16px;height:16px}
+  .btn-primary{background:var(--forest);color:#fff;box-shadow:0 6px 16px -8px rgba(47,74,52,.7)}
+  .btn-primary:hover{background:var(--forest-hover)}
+  .btn-ghost{background:var(--surface);border-color:var(--line);color:#4F4C45}
+  .btn-ghost:hover{background:var(--surface-2)}
+  .btn-soft{background:var(--sage-soft);color:var(--forest)}
+  .btn-danger-soft{background:var(--danger-soft);color:#8E3F3B}
+  .btn-sm{padding:7px 12px;font-size:13px}
+  .btn-block{width:100%}
+  .btn-icon{width:34px;height:34px;padding:0;border-radius:10px;background:transparent;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center}
+  .btn-icon:hover{background:var(--surface-2)}
+  .btn-icon svg{width:16px;height:16px}
+  .btn[disabled]{opacity:.45;pointer-events:none}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:20px;box-shadow:var(--shadow);
+  }
+  .card + .card{margin-top:16px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .card-title{font-size:15.5px;font-weight:650;display:flex;align-items:center;gap:9px}
+  .card-title .tick{width:8px;height:8px;border-radius:50%;background:var(--sage);flex:0 0 8px}
+  .muted{color:var(--muted)}
+  .small{font-size:12.5px}
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .stack-col{display:flex;flex-direction:column;gap:0}
+
+  /* ---------- Today hero ---------- */
+  .hero{
+    background:linear-gradient(120deg,#FFFFFF 0%,#FDFBF7 55%,#F1F7F0 100%);
+    border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .hero:after{
+    content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,var(--sage-soft),transparent 68%);pointer-events:none;
+  }
+  .hero h1{font-size:24px;font-weight:700}
+  .hero .date{color:var(--muted);font-size:13.5px;margin-top:5px}
+  .ring{position:relative;width:96px;height:96px;flex:0 0 96px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .val{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:19px}
+  .ring .lbl{position:absolute;inset:0;display:grid;place-items:center;padding-top:26px;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  /* ---------- Task rows ---------- */
+  .task{
+    display:flex;align-items:flex-start;gap:13px;padding:13px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .task:last-child{border-bottom:0}
+  .check{
+    width:23px;height:23px;flex:0 0 23px;border-radius:8px;border:1.8px solid #CFC9BD;
+    background:var(--surface);display:grid;place-items:center;margin-top:1px;transition:all .15s;
+  }
+  .check svg{width:13px;height:13px;opacity:0;color:#fff;transition:opacity .12s}
+  .check:hover{border-color:var(--sage)}
+  .check.on{background:var(--forest);border-color:var(--forest)}
+  .check.on svg{opacity:1}
+  .task-body{flex:1;min-width:0}
+  .task-title{font-size:14.5px;font-weight:550;word-break:break-word}
+  .task.done .task-title{text-decoration:line-through;color:var(--muted)}
+  .task-desc{font-size:12.5px;color:var(--muted);margin-top:2px;word-break:break-word}
+  .task-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+  .task-actions{display:flex;gap:4px;opacity:.55}
+  .task:hover .task-actions{opacity:1}
+  .task-actions .btn-icon{width:30px;height:30px;border-color:transparent}
+  .task-actions .btn-icon:hover{background:var(--surface-2);border-color:var(--line)}
+
+  .pill{
+    font-size:11px;font-weight:650;padding:2.5px 9px;border-radius:999px;
+    background:var(--surface-2);color:var(--muted);display:inline-flex;align-items:center;gap:4px;
+  }
+  .pill.high{background:var(--peach-soft);color:#8E5527}
+  .pill.medium{background:var(--sky-soft);color:#3A5F86}
+  .pill.low{background:var(--sage-soft);color:var(--forest)}
+  .pill.overdue{background:var(--danger-soft);color:#8E3F3B}
+  .pill.date{background:#F1EEE7}
+  .badge-planned{background:var(--peach-soft);color:#8E5527;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+
+  .empty{text-align:center;padding:30px 16px;color:var(--muted)}
+  .empty .ico{width:46px;height:46px;border-radius:14px;background:var(--surface-2);display:grid;place-items:center;margin:0 auto 12px}
+  .empty .ico svg{width:22px;height:22px;opacity:.6}
+  .empty b{display:block;color:#4F4C45;font-size:14px;margin-bottom:3px}
+
+  /* ---------- Progress bars ---------- */
+  .bar{height:9px;border-radius:999px;background:#EDEAE3;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:999px;background:var(--forest);transition:width .35s ease}
+  .bar.sky > i{background:var(--sky)} .bar.lav > i{background:var(--lav)} .bar.peach > i{background:var(--peach)} .bar.sage > i{background:var(--sage)}
+
+  /* ---------- Quick add ---------- */
+  .quick-add{display:flex;gap:8px;margin-bottom:8px}
+  .quick-add input{flex:1}
+
+  /* ---------- Planner ---------- */
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .seg button{border:0;background:transparent;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+  .cal-head{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+  .week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:6px}
+  .day-cell{
+    border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);
+    padding:9px 6px;text-align:center;transition:all .15s;min-height:70px;
+  }
+  .day-cell:hover{border-color:var(--sage)}
+  .day-cell .dow{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .day-cell .dnum{font-size:17px;font-weight:650;margin-top:2px}
+  .day-cell .cnt{font-size:10.5px;color:var(--muted);margin-top:3px}
+  .day-cell.today{border-color:var(--forest);background:var(--forest-soft)}
+  .day-cell.sel{border-color:var(--sky);background:var(--sky-soft)}
+  .day-cell .mini{height:4px;border-radius:999px;background:#EDEAE3;margin-top:5px;overflow:hidden}
+  .day-cell .mini i{display:block;height:100%;background:var(--forest)}
+
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:9px}
+  .wcol{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:9px;min-height:150px}
+  .wcol h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between}
+  .wcol .chip{
+    font-size:11.5px;background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    padding:6px 7px;margin-bottom:6px;line-height:1.3;cursor:pointer;word-break:break-word;
+  }
+  .wcol .chip.done{opacity:.5;text-decoration:line-through}
+  .wcol .chip.high{border-left:3px solid var(--peach)}
+  .wcol .chip.medium{border-left:3px solid var(--sky)}
+  .wcol .chip.low{border-left:3px solid var(--sage)}
+
+  /* ---------- Routine / goal / list rows ---------- */
+  .rout-item,.list-item{display:flex;align-items:center;gap:11px;padding:9px 2px;border-bottom:1px solid var(--line)}
+  .rout-item:last-child,.list-item:last-child{border-bottom:0}
+  .rout-item .txt,.list-item .txt{flex:1;font-size:14px;word-break:break-word}
+  .rout-item.done .txt,.list-item.done .txt{text-decoration:line-through;color:var(--muted)}
+  .mini-actions{display:flex;gap:2px;opacity:.55}
+  .rout-item:hover .mini-actions,.list-item:hover .mini-actions,.step:hover .mini-actions{opacity:1}
+  .mini-actions .btn-icon{width:28px;height:28px;border-color:transparent;border-radius:8px}
+  .mini-actions .btn-icon:hover{background:var(--surface-2);border-color:var(--line)}
+  .mini-actions .btn-icon svg{width:13px;height:13px}
+
+  .days{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+  .daychip{font-size:10.5px;font-weight:650;padding:2.5px 7px;border-radius:999px;background:#F1EEE7;color:#8A857B}
+  .daychip.on{background:var(--lav-soft);color:#54479C}
+  .steps{margin-top:6px}
+  .step{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px dashed var(--line)}
+  .step:last-child{border-bottom:0}
+  .step .txt{flex:1;font-size:13.5px}
+  .step.done .txt{text-decoration:line-through;color:var(--muted)}
+
+  .inline-add{display:flex;gap:8px;margin-top:12px}
+  .inline-add input{flex:1}
+
+  /* ---------- Forms ---------- */
+  input[type=text],input[type=date],input[type=email],input[type=search],textarea,select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
+    background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  textarea{resize:vertical;min-height:74px}
+  input:focus,textarea:focus,select:focus{border-color:var(--sage);box-shadow:0 0 0 3px var(--sage-soft)}
+  label.fld{display:block;margin-bottom:13px}
+  label.fld > span{display:block;font-size:12.5px;font-weight:600;color:#4F4C45;margin-bottom:6px}
+  .row{display:flex;gap:10px}
+  .row > *{flex:1}
+  .day-picker{display:flex;gap:6px;flex-wrap:wrap}
+  .day-picker button{width:42px;height:38px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;color:var(--muted)}
+  .day-picker button.on{background:var(--lav-soft);border-color:var(--lav);color:#54479C}
+  .check-line{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;padding:6px 0}
+  .check-line input{width:auto;margin-top:3px}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(38,36,32,.45);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:18px;z-index:100;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:470px;
+    max-height:88vh;overflow:auto;box-shadow:var(--shadow-lg);animation:pop .18s ease;
+  }
+  .modal.wide{max-width:620px}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 0;position:sticky;top:0;background:var(--surface);z-index:2}
+  .modal-head h3{font-size:17px}
+  .modal-body{padding:18px 22px}
+  .modal-foot{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding:4px 22px 22px}
+
+  /* ---------- Settings rows ---------- */
+  .set-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  .set-row:last-child{border-bottom:0}
+  .set-row .grow{flex:1;min-width:0}
+  .set-row b{font-size:14px;font-weight:600}
+  .set-row .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .set-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .danger{border:1px solid #EBC9C7;background:var(--danger-soft);border-radius:var(--r-md);padding:14px;margin-top:14px}
+
+  /* ---------- Pricing / plans ---------- */
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .plan{border:1px solid var(--line);border-radius:var(--r-md);padding:16px;background:var(--surface)}
+  .plan.plus{border-color:var(--forest);background:linear-gradient(160deg,#F4F8F3,#FFFFFF)}
+  .plan h4{font-size:15px;display:flex;align-items:center;gap:8px}
+  .plan .price{font-size:22px;font-weight:700;margin:6px 0 2px}
+  .plan ul{list-style:none;padding:0;margin:10px 0 0;font-size:13px}
+  .plan li{display:flex;gap:8px;align-items:flex-start;padding:4px 0;color:#4F4C45}
+  .plan li svg{width:15px;height:15px;flex:0 0 15px;color:var(--forest);margin-top:3px}
+  .plan li.planned{color:var(--muted)}
+
+  /* ---------- Welcome / onboarding ---------- */
+  .welcome-card{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:520px;box-shadow:var(--shadow-lg);overflow:hidden;animation:pop .2s ease}
+  .welcome-hero{background:linear-gradient(135deg,var(--forest),var(--sage));color:#fff;padding:26px 24px}
+  .welcome-hero .logo{background:rgba(255,255,255,.16);box-shadow:none;width:44px;height:44px;flex:0 0 44px;border-radius:13px}
+  .welcome-hero .logo svg{width:24px;height:24px}
+  .welcome-hero h2{font-size:21px;margin-top:14px}
+  .welcome-hero p{margin:6px 0 0;font-size:13.5px;opacity:.92;color:#fff}
+  .welcome-body{padding:22px 24px}
+  .tour-point{display:flex;gap:12px;align-items:flex-start;padding:9px 0}
+  .tour-point .num{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--sage-soft);color:var(--forest);display:grid;place-items:center;font-size:12.5px;font-weight:700}
+  .tour-point b{font-size:14px}
+  .tour-point p{margin:1px 0 0;font-size:13px;color:var(--muted)}
+  .welcome-foot{display:flex;flex-direction:column;gap:9px;padding:0 24px 24px}
+
+  /* ---------- Toast ---------- */
+  .toast-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{
+    background:#2C2A26;color:#fff;font-size:13.5px;font-weight:550;padding:10px 17px;border-radius:999px;
+    box-shadow:var(--shadow-lg);animation:toastIn .2s ease;display:flex;align-items:center;gap:10px;max-width:92vw;pointer-events:auto;
+  }
+  .toast svg{width:15px;height:15px;color:#9BD08F;flex:0 0 15px}
+  .toast.error{background:#5E2F2C}
+  .toast.error svg{color:#F3B4AE}
+  .toast .toast-action{background:rgba(255,255,255,.14);border:0;color:#fff;font-size:12.5px;font-weight:650;padding:5px 11px;border-radius:999px}
+  .toast .toast-action:hover{background:rgba(255,255,255,.24)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .banner{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--sky-soft);border:1px solid #D3E3F4;border-radius:var(--r-md);
+    padding:12px 15px;font-size:13px;color:#3A5F86;margin-bottom:16px;
+  }
+  .banner.warn{background:#FDF3E6;border-color:#F0DCC0;color:#8E5527}
+  .banner .grow{flex:1;min-width:150px}
+
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:15px;box-shadow:var(--shadow)}
+  .stat .n{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .chart{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:6px}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .chart .stack{width:100%;max-width:38px;background:#EDEAE3;border-radius:8px;position:relative;display:flex;align-items:flex-end;overflow:hidden}
+  .chart .stack > i{display:block;width:100%;background:var(--forest);border-radius:8px;transition:height .4s ease;min-height:0}
+  .chart .dl{font-size:10.5px;color:var(--muted)}
+
+  /* ---------- Mobile ---------- */
+  .bottomnav{display:none}
+  @media (max-width:900px){
+    .sidebar{display:none}
+    .topbar{display:flex}
+    .content{padding:18px 16px 108px}
+    .page-title{font-size:22px}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .plans{grid-template-columns:1fr}
+    .hero{flex-direction:row;align-items:center;gap:12px;padding:18px}
+    .hero h1{font-size:20px}
+    .hero .date{font-size:12.5px}
+    .hero .ring{width:84px;height:84px;flex:0 0 84px}
+    .hero .ring svg{width:84px;height:84px}
+    .hero .ring .val{font-size:16px}
+    .hero .ring .lbl{padding-top:22px;font-size:9px}
+    .week-grid{display:flex;overflow-x:auto;gap:10px;padding-bottom:6px}
+    .wcol{min-width:150px;flex:1}
+    .bottomnav{
+      display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;
+      background:rgba(255,255,255,.94);backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      justify-content:space-around;
+    }
+    .bottomnav button{
+      border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:6px 2px;border-radius:12px;color:var(--muted);font-size:9.5px;font-weight:600;flex:1;min-width:0;
+    }
+    .bottomnav button svg{width:21px;height:21px}
+    .bottomnav button.active{color:var(--forest);background:var(--forest-soft)}
+    .toast-wrap{bottom:80px}
+    .week-strip{gap:4px}
+    .day-cell{padding:7px 3px}
+    .day-cell .dnum{font-size:15px}
+    .modal-head{position:static}
+  }
+  @media (max-width:400px){
+    .bottomnav button{font-size:8.5px}
+    .bottomnav button svg{width:19px;height:19px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">DayFlow</div>
+        <div class="brand-tag">your day, in flow</div>
+      </div>
+    </div>
+    <nav class="nav" id="sideNav" aria-label="Main"></nav>
+    <div class="side-foot">
+      <button class="nav-item" onclick="DF.openSettings()">Settings &amp; backup</button>
+      <div class="hint" id="sideHint">Your data is saved in this browser only.</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="logo" style="width:32px;height:32px;flex:0 0 32px;border-radius:10px" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg>
+      </div>
+      <div style="font-weight:700">DayFlow</div>
+      <div id="mobileTitle" style="margin-left:auto;font-size:13px;color:var(--muted);font-weight:600"></div>
+      <button class="btn-icon" onclick="DF.openSettings()" aria-label="Settings and backup" style="margin-left:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.7 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.6a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+
+  <nav class="bottomnav" id="bottomNav" aria-label="Main"></nav>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="overlay" id="welcome"><div class="welcome-card" id="welcomeCard"></div></div>
+<div class="toast-wrap" id="toasts" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" style="display:none" />
+
+<script>
+/* =====================================================================
+   DayFlow — a calm, single-file planner.
+   Data is stored locally in this browser (localStorage). No accounts,
+   no tracking, no external services. Export a backup any time.
+   ===================================================================== */
+(function(){
+  "use strict";
+
+  /* ---------- Config (edit these before publishing) ---------- */
+  var APP_VERSION   = "1.1.0";
+  var SCHEMA_VERSION = 2;
+  // Replace with a real contact address before publishing. While it stays
+  // as "example", the feedback form copies text instead of opening email.
+  var CONTACT_EMAIL = "hello@example.com";
+  var KEY = "dayflow.v1";
+  var EMBED = /[?&]embed=1/.test(window.location.search);
+
+  /* ---------- Storage (with safe fallback) ---------- */
+  var memoryFallback = null;
+  var storageOK = true;
+  try {
+    var probe = "__df_probe__";
+    localStorage.setItem(probe, "1");
+    localStorage.removeItem(probe);
+  } catch (e) { storageOK = false; }
+
+  function loadRaw(){
+    if(!storageOK) return memoryFallback;
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return null;
+      var d = JSON.parse(raw);
+      return d && typeof d === "object" ? d : null;
+    }catch(e){ return null; }
+  }
+  // Returns "ok" | "memory" | "error" — callers must not claim success on "error".
+  function save(){
+    if(!storageOK){ memoryFallback = state; return "memory"; }
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); return "ok"; }
+    catch(e){ return "error"; }
+  }
+  function persist(msg){
+    var r = save();
+    render();
+    if(r === "error") toast("Couldn't save your changes — browser storage may be full.", true);
+    else if(msg) toast(msg);
+    return r !== "error";
+  }
+
+  /* ---------- Utilities ---------- */
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function clampStr(s, n){ s = String(s == null ? "" : s); return s.length > n ? s.slice(0, n) : s; }
+  function pad(n){ return n < 10 ? "0"+n : ""+n; }
+  function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function todayStr(){ return ymd(new Date()); }
+  function parseYmd(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function addDays(s, n){ var d = parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); }
+  function dowIdx(s){ var d = parseYmd(s); return (d.getDay()+6)%7; } // 0=Mon
+  var DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  var DOW_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtHuman(s){
+    var d = parseYmd(s);
+    return DOW_LONG[dowIdx(s)] + ", " + d.getDate() + " " + MON[d.getMonth()];
+  }
+  function fmtShort(s){ var d = parseYmd(s); return d.getDate() + " " + MON[d.getMonth()]; }
+  function relLabel(s){
+    var t = todayStr();
+    if(s === t) return "Today";
+    if(s === addDays(t,1)) return "Tomorrow";
+    if(s === addDays(t,-1)) return "Yesterday";
+    return fmtShort(s);
+  }
+  function pct(a,b){ return b <= 0 ? 0 : Math.round(a/b*100); }
+  function startOfWeek(s){ return addDays(s, -dowIdx(s)); }
+
+  /* ---------- State ---------- */
+  function blankState(){
+    return { tasks:[], routines:[], routineLog:{}, goals:[], lists:[],
+             seeded:false, bannerDismissed:false, onboarded:false, v:SCHEMA_VERSION };
+  }
+  var state = blankState();
+  var ui = { tab:"today", plannerMode:"day", plannerDate: todayStr(), routineDate: todayStr() };
+
+  /* ---------- Data normalisation & migration ---------- */
+  function normTask(t){
+    t = t || {};
+    return { id: t.id || uid(), title: clampStr(t.title,200), description: clampStr(t.description,600),
+      dueDate: t.dueDate || todayStr(),
+      priority: (t.priority==="high"||t.priority==="low") ? t.priority : "medium",
+      completed: !!t.completed, completedAt: t.completedAt || null,
+      createdAt: t.createdAt || todayStr(), example: !!t.example };
+  }
+  function normRoutine(r){
+    r = r || {};
+    return { id: r.id || uid(), name: clampStr(r.name,80),
+      days: (r.days||[]).filter(function(d){ return d>=0 && d<=6; }),
+      items: (r.items||[]).map(function(i){ return { id:i.id||uid(), text:clampStr(i.text,120) }; }),
+      createdAt: r.createdAt || todayStr(), example: !!r.example };
+  }
+  function normGoal(g){
+    g = g || {};
+    return { id: g.id || uid(), title: clampStr(g.title,140), description: clampStr(g.description,600),
+      targetDate: g.targetDate || "",
+      steps: (g.steps||[]).map(function(s){ return { id:s.id||uid(), text:clampStr(s.text,140), done:!!s.done }; }),
+      createdAt: g.createdAt || todayStr(), example: !!g.example };
+  }
+  function normList(l){
+    l = l || {};
+    return { id: l.id || uid(), name: clampStr(l.name,80),
+      items: (l.items||[]).map(function(i){ return { id:i.id||uid(), text:clampStr(i.text,200), done:!!i.done }; }),
+      createdAt: l.createdAt || todayStr(), example: !!l.example };
+  }
+  function migrate(d){
+    var v = d.v || 1;
+    if(v < SCHEMA_VERSION){
+      d.tasks = (d.tasks||[]).map(normTask);
+      d.routines = (d.routines||[]).map(normRoutine);
+      d.goals = (d.goals||[]).map(normGoal);
+      d.lists = (d.lists||[]).map(normList);
+      if(!d.routineLog || typeof d.routineLog !== "object") d.routineLog = {};
+      d.v = SCHEMA_VERSION;
+    }
+    return d;
+  }
+  function applyState(d){
+    d = migrate(d);
+    state.tasks = d.tasks || [];
+    state.routines = d.routines || [];
+    state.routineLog = d.routineLog || {};
+    state.goals = d.goals || [];
+    state.lists = d.lists || [];
+    state.seeded = !!d.seeded;
+    state.bannerDismissed = !!d.bannerDismissed;
+    state.onboarded = !!d.onboarded;
+  }
+
+  /* ---------- Icons ---------- */
+  var ICON = {
+    today:'<path d="M12 3v9l6 3"/><circle cx="12" cy="12" r="9"/>',
+    planner:'<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/>',
+    routines:'<path d="M4 7h10M4 12h10M4 17h7"/><path d="M17.5 15.5l2 2 3.5-4"/>',
+    goals:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+    lists:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    progress:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    check:'<path d="M4 12.5l5 5 11-11"/>',
+    edit:'<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
+    trash:'<path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/>',
+    up:'<path d="M12 19V5M6 11l6-6 6 6"/>',
+    down:'<path d="M12 5v14M6 13l6 6 6-6"/>',
+    left:'<path d="M15 6l-6 6 6 6"/>',
+    right:'<path d="M9 6l6 6-6 6"/>',
+    x:'<path d="M6 6l12 12M18 6L6 18"/>',
+    calendar:'<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/>',
+    sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    download:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/>',
+    upload:'<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 4h16"/>',
+    share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>',
+    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    lock:'<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>',
+    heart:'<path d="M12 20s-7-4.4-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.6 12 20 12 20z"/>'
+  };
+  function icon(name, size){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" ' +
+      'stroke-linecap="round" stroke-linejoin="round"' + (size ? ' style="width:'+size+'px;height:'+size+'px"' : '') +
+      ' aria-hidden="true">' + (ICON[name]||"") + '</svg>';
+  }
+
+  var TABS = [
+    {id:"today",   label:"Today",    icon:"today"},
+    {id:"planner", label:"Planner",  icon:"planner"},
+    {id:"routines",label:"Routines", icon:"routines"},
+    {id:"goals",   label:"Goals",    icon:"goals"},
+    {id:"lists",   label:"My Lists", icon:"lists"},
+    {id:"progress",label:"Progress", icon:"progress"}
+  ];
+
+  /* ---------- Seed example content ---------- */
+  function seed(){
+    var t = todayStr();
+    state.tasks = [
+      normTask({title:"Review project notes", description:"Skim the notes and highlight the next three actions.", dueDate:t, priority:"high", example:true}),
+      normTask({title:"30-minute walk", dueDate:t, priority:"medium", example:true}),
+      normTask({title:"Reply to messages", description:"Clear the inbox before the end of the day.", dueDate:t, priority:"low", example:true}),
+      normTask({title:"Plan the weekend", description:"Decide what to cook and where to go.", dueDate:addDays(t,1), priority:"medium", example:true}),
+      normTask({title:"Book dentist appointment", dueDate:addDays(t,3), priority:"low", example:true})
+    ];
+    state.routines = [
+      normRoutine({name:"Morning routine", days:[0,1,2,3,4], example:true, items:[
+        {text:"Drink a glass of water"},{text:"Stretch for five minutes"},
+        {text:"Write today's top three tasks"},{text:"Eat breakfast"}]}),
+      normRoutine({name:"Evening wind-down", days:[0,1,2,3,4,5,6], example:true, items:[
+        {text:"Tidy the desk"},{text:"Prepare tomorrow's clothes"},{text:"Read for 20 minutes"}]})
+    ];
+    state.goals = [
+      normGoal({title:"Read 12 books this year", description:"One book a month, any genre.", targetDate:addDays(t,120), example:true, steps:[
+        {text:"Pick the first three books", done:true},{text:"Read book one", done:true},
+        {text:"Read book two"},{text:"Write a short note on each book"}]}),
+      normGoal({title:"Get fitter", description:"Move a little every day.", example:true, steps:[
+        {text:"Walk 3 times this week"},{text:"Try one new class"}]})
+    ];
+    state.lists = [
+      normList({name:"Books to read", example:true, items:[
+        {text:"The Midnight Library"},{text:"Atomic Habits", done:true},{text:"Project Hail Mary"}]}),
+      normList({name:"Shopping list", example:true, items:[
+        {text:"Oat milk"},{text:"Bananas"},{text:"Coffee beans"}]})
+    ];
+    state.seeded = true;
+  }
+  function hasExamples(){
+    function any(arr){ return (arr||[]).some(function(x){ return x.example; }); }
+    return any(state.tasks) || any(state.routines) || any(state.goals) || any(state.lists);
+  }
+  function removeExamples(silent){
+    var goneRoutines = state.routines.filter(function(r){ return r.example; }).map(function(r){ return r.id; });
+    state.tasks = state.tasks.filter(function(x){ return !x.example; });
+    state.routines = state.routines.filter(function(x){ return !x.example; });
+    state.goals = state.goals.filter(function(x){ return !x.example; });
+    state.lists = state.lists.filter(function(x){ return !x.example; });
+    Object.keys(state.routineLog).forEach(function(day){
+      goneRoutines.forEach(function(id){ if(state.routineLog[day]) delete state.routineLog[day][id]; });
+    });
+    state.seeded = false;
+    if(!silent){ state.bannerDismissed = true; persist("Example content removed"); }
+  }
+  function clearExamples(){ removeExamples(false); }
+  function dismissBanner(){ state.bannerDismissed = true; save(); render(); }
+
+  /* ---------- Toast ---------- */
+  function toast(msg, isError){
+    var wrap = document.getElementById("toasts");
+    if(!wrap) return;
+    var el = document.createElement("div");
+    el.className = "toast" + (isError ? " error" : "");
+    el.innerHTML = icon(isError ? "info" : "check") + "<span>" + esc(msg) + "</span>";
+    wrap.appendChild(el);
+    setTimeout(function(){
+      el.style.transition = "opacity .25s, transform .25s";
+      el.style.opacity = "0"; el.style.transform = "translateY(6px)";
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 260);
+    }, isError ? 4200 : 2100);
+  }
+  // Toast with an Undo button — used for destructive actions.
+  var undoFn = null;
+  function offerUndo(msg, restore){
+    var wrap = document.getElementById("toasts");
+    if(!wrap) return;
+    undoFn = restore;
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = "<span>" + esc(msg) + "</span>";
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "toast-action"; b.textContent = "Undo";
+    b.addEventListener("click", function(){
+      if(undoFn){ undoFn(); undoFn = null; }
+      if(el.parentNode) el.parentNode.removeChild(el);
+      render(); toast("Restored");
+    });
+    el.appendChild(b);
+    wrap.appendChild(el);
+    setTimeout(function(){
+      if(el.parentNode){
+        el.style.transition = "opacity .25s"; el.style.opacity = "0";
+        setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 260);
+      }
+      undoFn = null;
+    }, 6000);
+  }
+
+  /* ---------- Clipboard ---------- */
+  function copyText(text, okMsg){
+    function done(){ toast(okMsg || "Copied to clipboard"); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly",""); ta.style.position = "fixed"; ta.style.top="-1000px";
+        document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+        document.body.removeChild(ta); done();
+      }catch(e){ toast("Couldn't copy — please copy manually.", true); }
+    }
+  }
+
+  /* ---------- Modal ---------- */
+  var modalSubmit = null;
+  function openModal(title, bodyHtml, submitLabel, onSubmit, opts){
+    opts = opts || {};
+    var ov = document.getElementById("overlay");
+    document.getElementById("modal").className = "modal" + (opts.wide ? " wide" : "");
+    document.getElementById("modal").innerHTML =
+      '<form id="modalForm" novalidate>' +
+        '<div class="modal-head"><h3>' + esc(title) + '</h3>' +
+          '<button type="button" class="btn-icon" onclick="DF.closeModal()" aria-label="Close">' + icon("x") + '</button>' +
+        '</div>' +
+        '<div class="modal-body">' + bodyHtml + '</div>' +
+        '<div class="modal-foot">' +
+          (opts.extraHtml || "") +
+          '<button type="button" class="btn btn-ghost" onclick="DF.closeModal()">' + esc(opts.cancelLabel || "Cancel") + '</button>' +
+          (submitLabel ? '<button type="submit" class="btn btn-primary">' + esc(submitLabel) + '</button>' : '') +
+        '</div>' +
+      '</form>';
+    modalSubmit = onSubmit || null;
+    ov.classList.add("open");
+    var f = document.getElementById("modalForm");
+    f.addEventListener("submit", function(ev){
+      ev.preventDefault();
+      if(modalSubmit) modalSubmit(f);
+    });
+    var first = f.querySelector("input,textarea,select");
+    if(first) setTimeout(function(){ try{ first.focus(); }catch(e){} }, 60);
+  }
+  function closeModal(){
+    document.getElementById("overlay").classList.remove("open");
+    document.getElementById("modal").innerHTML = "";
+    modalSubmit = null;
+  }
+  document.getElementById("overlay").addEventListener("mousedown", function(e){ if(e.target === this) closeModal(); });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      if(document.getElementById("overlay").classList.contains("open")) closeModal();
+    }
+  });
+
+  /* ---------- Navigation ---------- */
+  function go(tab){
+    ui.tab = tab;
+    if(tab === "planner" && !ui.plannerDate) ui.plannerDate = todayStr();
+    render();
+    try{ window.scrollTo({top:0, behavior:"smooth"}); }catch(e){}
+  }
+  function renderNav(){
+    var side = document.getElementById("sideNav");
+    var bottom = document.getElementById("bottomNav");
+    var openToday = todayTaskList().filter(function(t){ return !t.completed; }).length;
+    side.innerHTML = TABS.map(function(t){
+      var badge = (t.id === "today" && openToday > 0) ? '<span class="dot">' + openToday + '</span>' : "";
+      return '<button class="nav-item' + (ui.tab === t.id ? " active" : "") + '" onclick="DF.go(\'' + t.id + '\')" ' +
+        (ui.tab === t.id ? 'aria-current="page"' : '') + '>' +
+        icon(t.icon) + '<span>' + t.label + '</span>' + badge + '</button>';
+    }).join("");
+    bottom.innerHTML = TABS.map(function(t){
+      return '<button class="' + (ui.tab === t.id ? "active" : "") + '" onclick="DF.go(\'' + t.id + '\')" ' +
+        (ui.tab === t.id ? 'aria-current="page"' : '') + '>' + icon(t.icon) + '<span>' + t.label + '</span></button>';
+    }).join("");
+    document.getElementById("mobileTitle").textContent =
+      (TABS.filter(function(t){ return t.id === ui.tab; })[0] || {}).label || "";
+    var hint = document.getElementById("sideHint");
+    if(hint) hint.textContent = storageOK ? "Your data is saved in this browser only." : "Storage is blocked — changes last for this session only.";
+  }
+
+  /* =====================================================================
+     TASKS
+     ===================================================================== */
+  function taskSort(a,b){
+    var order = {high:0, medium:1, low:2};
+    if(a.completed !== b.completed) return a.completed ? 1 : -1;
+    if(order[a.priority] !== order[b.priority]) return order[a.priority] - order[b.priority];
+    return (a.createdAt||"") < (b.createdAt||"") ? -1 : 1;
+  }
+  function tasksFor(dateStr){ return state.tasks.filter(function(t){ return t.dueDate === dateStr; }).sort(taskSort); }
+  function todayTaskList(){
+    var t = todayStr();
+    return state.tasks.filter(function(x){ return x.dueDate === t || (x.dueDate && x.dueDate < t && !x.completed); });
+  }
+  function priorityLabel(p){ return p === "high" ? "High" : p === "medium" ? "Medium" : "Low"; }
+
+  function taskRow(t, opts){
+    opts = opts || {};
+    var overdue = t.dueDate && t.dueDate < todayStr() && !t.completed;
+    var meta = [];
+    if(opts.showDate) meta.push('<span class="pill date">' + icon("calendar","11") + esc(relLabel(t.dueDate)) + '</span>');
+    meta.push('<span class="pill ' + t.priority + '">' + priorityLabel(t.priority) + '</span>');
+    if(overdue) meta.push('<span class="pill overdue">Overdue</span>');
+    return '<div class="task' + (t.completed ? " done" : "") + '">' +
+      '<button class="check' + (t.completed ? " on" : "") + '" onclick="DF.toggleTask(\'' + t.id + '\')" ' +
+        'aria-pressed="' + (t.completed ? "true" : "false") + '" aria-label="Mark \u201c' + esc(t.title) + '\u201d ' + (t.completed ? "not done" : "done") + '">' + icon("check") + '</button>' +
+      '<div class="task-body">' +
+        '<div class="task-title">' + esc(t.title) + '</div>' +
+        (t.description ? '<div class="task-desc">' + esc(t.description) + '</div>' : '') +
+        '<div class="task-meta">' + meta.join("") + '</div>' +
+      '</div>' +
+      '<div class="task-actions">' +
+        '<button class="btn-icon" aria-label="Edit task" title="Edit" onclick="DF.editTask(\'' + t.id + '\')">' + icon("edit") + '</button>' +
+        '<button class="btn-icon" aria-label="Move task to another date" title="Move" onclick="DF.moveTask(\'' + t.id + '\')">' + icon("right") + '</button>' +
+        '<button class="btn-icon" aria-label="Delete task" title="Delete" onclick="DF.deleteTask(\'' + t.id + '\')">' + icon("trash") + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function taskFormBody(t, fixedDate){
+    t = t || {};
+    return '' +
+      '<label class="fld"><span>Task title</span>' +
+        '<input type="text" name="title" maxlength="120" placeholder="e.g. Water the plants" value="' + esc(t.title||"") + '" required></label>' +
+      '<label class="fld"><span>Description <span class="muted">(optional)</span></span>' +
+        '<textarea name="description" maxlength="400" placeholder="Any extra detail">' + esc(t.description||"") + '</textarea></label>' +
+      '<div class="row">' +
+        '<label class="fld"><span>Due date</span>' +
+          '<input type="date" name="dueDate" value="' + esc(t.dueDate || fixedDate || todayStr()) + '" required></label>' +
+        '<label class="fld"><span>Priority</span>' +
+          '<select name="priority">' +
+            '<option value="high"' + (t.priority === "high" ? " selected" : "") + '>High</option>' +
+            '<option value="medium"' + (t.priority === "medium" || !t.priority ? " selected" : "") + '>Medium</option>' +
+            '<option value="low"' + (t.priority === "low" ? " selected" : "") + '>Low</option>' +
+          '</select></label>' +
+      '</div>';
+  }
+
+  function addTask(dateStr){
+    openModal("Add a task", taskFormBody(null, dateStr), "Add task", function(f){
+      var title = f.elements.title.value.trim();
+      if(!title){ f.elements.title.focus(); toast("Please add a task title", true); return; }
+      state.tasks.push(normTask({
+        title: title, description: f.elements.description.value.trim(),
+        dueDate: f.elements.dueDate.value || dateStr || todayStr(),
+        priority: f.elements.priority.value
+      }));
+      closeModal(); persist("Task added");
+    });
+  }
+  function editTask(id){
+    var t = state.tasks.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    openModal("Edit task", taskFormBody(t), "Save changes", function(f){
+      var title = f.elements.title.value.trim();
+      if(!title){ f.elements.title.focus(); toast("Please add a task title", true); return; }
+      t.title = title;
+      t.description = f.elements.description.value.trim();
+      t.dueDate = f.elements.dueDate.value || t.dueDate;
+      t.priority = f.elements.priority.value;
+      closeModal(); persist("Task updated");
+    });
+  }
+  function toggleTask(id){
+    var t = state.tasks.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    t.completed = !t.completed;
+    t.completedAt = t.completed ? todayStr() : null;
+    persist(t.completed ? "Nice — task complete" : null);
+  }
+  function deleteTask(id){
+    var t = state.tasks.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    var idx = state.tasks.indexOf(t);
+    state.tasks.splice(idx,1); save(); render();
+    offerUndo("Task deleted", function(){ state.tasks.splice(idx,0,t); save(); });
+  }
+  function moveTask(id){
+    var t = state.tasks.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    openModal("Move task",
+      '<p class="small muted" style="margin:0 0 14px">Move \u201c' + esc(t.title) + '\u201d to another date.</p>' +
+      '<label class="fld"><span>New date</span><input type="date" name="date" value="' + esc(addDays(t.dueDate||todayStr(),1)) + '" required></label>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button type="button" class="btn btn-soft btn-sm" onclick="document.querySelector(\'#modalForm [name=date]\').value=\'' + todayStr() + '\'">Today</button>' +
+        '<button type="button" class="btn btn-soft btn-sm" onclick="document.querySelector(\'#modalForm [name=date]\').value=\'' + addDays(todayStr(),1) + '\'">Tomorrow</button>' +
+        '<button type="button" class="btn btn-soft btn-sm" onclick="document.querySelector(\'#modalForm [name=date]\').value=\'' + addDays(todayStr(),7) + '\'">Next week</button>' +
+      '</div>', "Move task", function(f){
+        t.dueDate = f.elements.date.value || t.dueDate;
+        closeModal(); persist("Task moved to " + relLabel(t.dueDate));
+      });
+  }
+  function quickAddTask(){
+    var inp = document.getElementById("quickAdd");
+    if(!inp) return;
+    var v = inp.value.trim();
+    if(!v){ inp.focus(); return; }
+    state.tasks.push(normTask({ title: v, dueDate: todayStr(), priority:"medium" }));
+    persist("Task added");
+    var n = document.getElementById("quickAdd"); if(n) n.focus();
+  }
+  function moveUnfinishedToTomorrow(){
+    var t = todayStr(), tomorrow = addDays(t,1);
+    var moved = state.tasks.filter(function(x){ return !x.completed && x.dueDate && x.dueDate <= t; });
+    if(moved.length === 0){ toast("Nothing unfinished to move"); return; }
+    var prev = moved.map(function(x){ return { id:x.id, dueDate:x.dueDate }; });
+    moved.forEach(function(x){ x.dueDate = tomorrow; });
+    save(); render();
+    offerUndo(moved.length + " task" + (moved.length===1?"":"s") + " moved to tomorrow", function(){
+      prev.forEach(function(p){
+        var x = state.tasks.filter(function(y){ return y.id === p.id; })[0];
+        if(x) x.dueDate = p.dueDate;
+      });
+      save();
+    });
+  }
+
+  /* =====================================================================
+     TODAY
+     ===================================================================== */
+  function renderToday(){
+    var t = todayStr();
+    var list = todayTaskList().sort(taskSort);
+    var done = list.filter(function(x){ return x.completed; }).length;
+    var progress = pct(done, list.length);
+
+    var activeRoutines = state.routines.filter(function(r){ return r.days.indexOf(dowIdx(t)) !== -1; });
+    var rTot = 0, rDone = 0;
+    activeRoutines.forEach(function(r){
+      rTot += r.items.length;
+      rDone += r.items.filter(function(it){ return isItemDone(t, r.id, it.id); }).length;
+    });
+
+    var hour = new Date().getHours();
+    var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+    var h = "";
+    if(!storageOK){
+      h += '<div class="banner warn"><span class="grow"><b>Your browser is blocking local storage.</b> DayFlow still works, but changes will be lost when you close this tab. Try a normal (non-private) window, or use Export in Settings.</span></div>';
+    }
+    if(hasExamples() && !state.bannerDismissed){
+      h += '<div class="banner"><span class="grow"><b>Example content is loaded</b> so you can see how DayFlow works. Delete or edit it whenever you like.</span>' +
+        '<button class="btn btn-sm btn-ghost" onclick="DF.clearExamples()">Remove examples</button>' +
+        '<button class="btn-icon" onclick="DF.dismissBanner()" aria-label="Dismiss">' + icon("x") + '</button></div>';
+    }
+
+    h += '<div class="page-head"><div class="page-title">Today</div>' +
+      '<div class="page-sub">' + esc(fmtHuman(t)) + '</div></div>';
+
+    h += '<div class="hero">' +
+      '<div><h1>' + greet + ' \u{1F44B}</h1>' +
+      '<div class="date">' + (list.length === 0 ? "A clear day — nothing scheduled." :
+        done + " of " + list.length + " task" + (list.length === 1 ? "" : "s") + " done today.") + '</div>' +
+      '<div style="margin-top:16px;display:flex;gap:9px;flex-wrap:wrap">' +
+        '<button class="btn btn-primary" onclick="DF.addTask(\'' + t + '\')">' + icon("plus") + 'Add a task</button>' +
+        '<button class="btn btn-ghost" onclick="DF.go(\'planner\')">' + icon("calendar") + 'Open planner</button>' +
+      '</div></div>' +
+      '<div class="ring" role="img" aria-label="Today\u2019s progress: ' + progress + ' percent">' + ringSvg(progress) +
+        '<div class="val">' + progress + '%</div><div class="lbl">done</div></div>' +
+    '</div>';
+
+    h += '<div class="grid grid-2" style="margin-top:16px">';
+
+    // Tasks card
+    var high = list.filter(function(x){ return !x.completed && x.priority === "high"; });
+    h += '<div class="card"><div class="card-head"><div class="card-title"><span class="tick"></span>Today\u2019s tasks</div>' +
+      '<div style="display:flex;gap:6px">' +
+      (list.some(function(x){ return !x.completed; }) ? '<button class="btn btn-sm btn-ghost" onclick="DF.moveUnfinishedToTomorrow()">Move unfinished</button>' : '') +
+      '<button class="btn btn-sm btn-ghost" onclick="DF.addTask(\'' + t + '\')">' + icon("plus") + 'Add</button></div></div>';
+    h += '<div class="quick-add">' +
+      '<input type="text" id="quickAdd" maxlength="120" placeholder="Quick add a task for today\u2026" ' +
+      'aria-label="Quick add a task for today" onkeydown="if(event.key===\'Enter\'){event.preventDefault();DF.quickAddTask();}">' +
+      '<button class="btn btn-soft" onclick="DF.quickAddTask()">Add</button></div>';
+    if(list.length === 0){
+      h += emptyState("planner", "No tasks for today", "Add a task to get your day moving.", "Add a task", "DF.addTask('" + t + "')");
+    } else {
+      h += list.map(function(x){ return taskRow(x); }).join("");
+    }
+    h += '</div>';
+
+    h += '<div class="stack-col">';
+    h += '<div class="card"><div class="card-head"><div class="card-title"><span class="tick" style="background:var(--peach)"></span>Top priorities</div></div>';
+    if(high.length === 0){
+      h += '<p class="small muted" style="margin:0">No high-priority tasks waiting. ' + (list.length ? "You\u2019re on top of it." : "") + '</p>';
+    } else {
+      h += high.slice(0,4).map(function(x){ return taskRow(x); }).join("");
+    }
+    h += '</div>';
+
+    h += '<div class="card"><div class="card-head"><div class="card-title"><span class="tick" style="background:var(--lav)"></span>Today\u2019s routines</div>' +
+      (rTot ? '<span class="small muted">' + rDone + "/" + rTot + '</span>' : '') + '</div>';
+    if(activeRoutines.length === 0){
+      h += emptyState("routines", "No routines today", "Create a routine and pick which days it repeats on.", "Create routine", "DF.go('routines')");
+    } else {
+      activeRoutines.forEach(function(r){
+        var d = r.items.filter(function(it){ return isItemDone(t, r.id, it.id); }).length;
+        h += '<div style="margin-bottom:14px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+            '<b style="font-size:13.5px">' + esc(r.name) + '</b>' +
+            '<span class="small muted">' + d + "/" + r.items.length + '</span></div>' +
+          '<div class="bar lav" style="margin-bottom:8px"><i style="width:' + pct(d, r.items.length) + '%"></i></div>' +
+          r.items.map(function(it){
+            var on = isItemDone(t, r.id, it.id);
+            return '<div class="rout-item' + (on ? " done" : "") + '">' +
+              '<button class="check' + (on ? " on" : "") + '" aria-pressed="' + (on?"true":"false") + '" aria-label="Toggle ' + esc(it.text) + '" onclick="DF.toggleRoutineItem(\'' + r.id + '\',\'' + it.id + '\',\'' + t + '\')">' + icon("check") + '</button>' +
+              '<span class="txt">' + esc(it.text) + '</span></div>';
+          }).join("") +
+        '</div>';
+      });
+    }
+    h += '</div>';
+    h += '</div>'; // column
+    h += '</div>'; // grid
+
+    var gAvg = goalProgressAvg();
+    h += '<div class="card"><div class="card-head"><div class="card-title"><span class="tick" style="background:var(--sky)"></span>At a glance</div>' +
+      '<button class="btn btn-sm btn-ghost" onclick="DF.go(\'progress\')">See progress</button></div>' +
+      '<div class="grid grid-3">' +
+        '<div class="stat"><div class="n">' + list.length + '</div><div class="l">tasks today</div></div>' +
+        '<div class="stat"><div class="n">' + rDone + '/' + rTot + '</div><div class="l">routine steps</div></div>' +
+        '<div class="stat"><div class="n">' + gAvg + '%</div><div class="l">goal progress</div></div>' +
+      '</div></div>';
+
+    return h;
+  }
+
+  function ringSvg(percent){
+    var r = 40, c = 2*Math.PI*r, off = c*(1 - percent/100);
+    return '<svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true">' +
+      '<circle cx="48" cy="48" r="' + r + '" fill="none" stroke="#EDEAE3" stroke-width="9"/>' +
+      '<circle cx="48" cy="48" r="' + r + '" fill="none" stroke="url(#dfgrad)" stroke-width="9" stroke-linecap="round" ' +
+        'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/>' +
+      '<defs><linearGradient id="dfgrad" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0%" stop-color="#2F4A34"/><stop offset="100%" stop-color="#7FA37A"/></linearGradient></defs>' +
+      '</svg>';
+  }
+  function emptyState(iconName, title, sub, btnLabel, onclick){
+    return '<div class="empty"><div class="ico">' + icon(iconName) + '</div>' +
+      '<b>' + esc(title) + '</b><div class="small">' + esc(sub) + '</div>' +
+      (btnLabel ? '<div style="margin-top:12px"><button class="btn btn-sm btn-soft" onclick="' + onclick + '">' + esc(btnLabel) + '</button></div>' : '') +
+      '</div>';
+  }
+
+  /* =====================================================================
+     PLANNER
+     ===================================================================== */
+  function renderPlanner(){
+    var h = '<div class="page-head"><div class="page-title">Planner</div>' +
+      '<div class="page-sub">See your week, plan your days and move things around.</div></div>';
+
+    h += '<div class="cal-head" style="margin-bottom:16px">' +
+      '<div class="seg" role="tablist" aria-label="Planner view">' +
+        '<button class="' + (ui.plannerMode === "day" ? "on" : "") + '" role="tab" aria-selected="' + (ui.plannerMode==="day") + '" onclick="DF.setPlannerMode(\'day\')">Day</button>' +
+        '<button class="' + (ui.plannerMode === "week" ? "on" : "") + '" role="tab" aria-selected="' + (ui.plannerMode==="week") + '" onclick="DF.setPlannerMode(\'week\')">Week</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:7px;align-items:center">' +
+        '<button class="btn-icon" onclick="DF.shiftWeek(-1)" aria-label="Previous week">' + icon("left") + '</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="DF.gotoToday()">Today</button>' +
+        '<button class="btn-icon" onclick="DF.shiftWeek(1)" aria-label="Next week">' + icon("right") + '</button>' +
+      '</div>' +
+    '</div>';
+
+    var anchor = ui.plannerDate || todayStr();
+    var weekStart = startOfWeek(anchor);
+    var days = [];
+    for(var i=0;i<7;i++) days.push(addDays(weekStart,i));
+
+    h += '<div class="week-strip">';
+    days.forEach(function(d){
+      var list = tasksFor(d);
+      var done = list.filter(function(x){ return x.completed; }).length;
+      var cls = "day-cell";
+      if(d === todayStr()) cls += " today";
+      if(d === anchor && ui.plannerMode === "day") cls += " sel";
+      h += '<button class="' + cls + '" onclick="DF.selectDay(\'' + d + '\')" aria-label="' + esc(fmtHuman(d)) + '">' +
+        '<div class="dow">' + DOW[dowIdx(d)] + '</div>' +
+        '<div class="dnum">' + parseYmd(d).getDate() + '</div>' +
+        '<div class="cnt">' + (list.length ? done + "/" + list.length : "\u2013") + '</div>' +
+        '<div class="mini"><i style="width:' + pct(done, list.length) + '%"></i></div>' +
+      '</button>';
+    });
+    h += '</div>';
+
+    if(ui.plannerMode === "day"){
+      var list = tasksFor(anchor);
+      var done = list.filter(function(x){ return x.completed; }).length;
+      h += '<div class="card" style="margin-top:16px"><div class="card-head">' +
+        '<div><div class="card-title">' + esc(fmtHuman(anchor)) + '</div>' +
+        '<div class="small muted" style="margin-top:2px">' + (list.length ? done + " of " + list.length + " complete" : "Nothing planned yet") + '</div></div>' +
+        '<button class="btn btn-primary btn-sm" onclick="DF.addTask(\'' + anchor + '\')">' + icon("plus") + 'Add task</button></div>';
+      if(list.length === 0){
+        h += emptyState("planner","This day is clear","Add a task to start planning.", "Add a task", "DF.addTask('" + anchor + "')");
+      } else {
+        h += list.map(function(x){ return taskRow(x); }).join("");
+      }
+      h += '</div>';
+    } else {
+      h += '<div class="week-grid" style="margin-top:16px">';
+      days.forEach(function(d){
+        var list = tasksFor(d);
+        h += '<div class="wcol"><h4><span>' + DOW[dowIdx(d)] + ' ' + parseYmd(d).getDate() + '</span>' +
+          '<span>' + list.filter(function(x){return x.completed;}).length + "/" + list.length + '</span></h4>';
+        if(list.length === 0){
+          h += '<div class="small muted" style="padding:6px 2px">Free</div>';
+        } else {
+          h += list.map(function(x){
+            return '<div class="chip ' + x.priority + (x.completed ? " done" : "") + '" onclick="DF.editTask(\'' + x.id + '\')">' + esc(x.title) + '</div>';
+          }).join("");
+        }
+        h += '<button class="btn btn-sm btn-ghost btn-block" style="margin-top:4px" onclick="DF.addTask(\'' + d + '\')">' + icon("plus") + 'Add</button>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    return h;
+  }
+  function setPlannerMode(m){ ui.plannerMode = m; render(); }
+  function selectDay(d){ ui.plannerDate = d; ui.plannerMode = "day"; render(); }
+  function gotoToday(){ ui.plannerDate = todayStr(); render(); }
+  function shiftWeek(n){ ui.plannerDate = addDays(ui.plannerDate || todayStr(), n*7); render(); }
+
+  /* =====================================================================
+     ROUTINES
+     ===================================================================== */
+  function isItemDone(day, routineId, itemId){
+    var dayLog = state.routineLog[day];
+    return !!(dayLog && dayLog[routineId] && dayLog[routineId][itemId]);
+  }
+  function toggleRoutineItem(routineId, itemId, day){
+    if(!state.routineLog[day]) state.routineLog[day] = {};
+    if(!state.routineLog[day][routineId]) state.routineLog[day][routineId] = {};
+    var cur = !!state.routineLog[day][routineId][itemId];
+    if(cur) delete state.routineLog[day][routineId][itemId];
+    else state.routineLog[day][routineId][itemId] = true;
+    save(); render();
+  }
+
+  function renderRoutines(){
+    var day = ui.routineDate || todayStr();
+    var h = '<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">' +
+      '<div><div class="page-title">Routines</div>' +
+      '<div class="page-sub">Repeating habits you can tick off each day. Completion is saved per day.</div></div>' +
+      '<button class="btn btn-primary" onclick="DF.addRoutine()">' + icon("plus") + 'New routine</button></div>';
+
+    if(state.routines.length === 0){
+      return h + '<div class="card">' + emptyState("routines","No routines yet",
+        "Morning and evening routines are a great place to start.", "Create a routine", "DF.addRoutine()") + '</div>';
+    }
+
+    state.routines.forEach(function(r){
+      var isToday = r.days.indexOf(dowIdx(day)) !== -1;
+      var doneCount = r.items.filter(function(it){ return isItemDone(day, r.id, it.id); }).length;
+      h += '<div class="card" style="margin-top:16px"><div class="card-head">' +
+        '<div><div class="card-title">' + esc(r.name) + (isToday ? '' : ' <span class="pill">not scheduled today</span>') + '</div>' +
+        '<div class="days">' + DOW.map(function(dn,i){
+          return '<span class="daychip' + (r.days.indexOf(i) !== -1 ? " on" : "") + '">' + dn + '</span>';
+        }).join("") + '</div></div>' +
+        '<div style="display:flex;gap:4px">' +
+          '<button class="btn-icon" aria-label="Edit routine" title="Edit routine" onclick="DF.editRoutine(\'' + r.id + '\')">' + icon("edit") + '</button>' +
+          '<button class="btn-icon" aria-label="Delete routine" title="Delete routine" onclick="DF.deleteRoutine(\'' + r.id + '\')">' + icon("trash") + '</button>' +
+        '</div></div>';
+
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0 8px">' +
+        '<span class="small muted">' + esc(relLabel(day)) + '</span>' +
+        '<span class="small muted">' + doneCount + " of " + r.items.length + ' done</span></div>' +
+        '<div class="bar lav" style="margin-bottom:10px"><i style="width:' + pct(doneCount, r.items.length) + '%"></i></div>';
+
+      if(r.items.length === 0){
+        h += '<p class="small muted">No items yet. Edit this routine to add some.</p>';
+      } else {
+        r.items.forEach(function(it){
+          var on = isItemDone(day, r.id, it.id);
+          h += '<div class="rout-item' + (on ? " done" : "") + '">' +
+            '<button class="check' + (on ? " on" : "") + '" aria-pressed="' + (on?"true":"false") + '" aria-label="Toggle ' + esc(it.text) + '" onclick="DF.toggleRoutineItem(\'' + r.id + '\',\'' + it.id + '\',\'' + day + '\')">' + icon("check") + '</button>' +
+            '<span class="txt">' + esc(it.text) + '</span>' +
+            '<span class="mini-actions">' +
+              '<button class="btn-icon" aria-label="Move item up" onclick="DF.reorderRoutineItem(\'' + r.id + '\',\'' + it.id + '\',-1)">' + icon("up") + '</button>' +
+              '<button class="btn-icon" aria-label="Move item down" onclick="DF.reorderRoutineItem(\'' + r.id + '\',\'' + it.id + '\',1)">' + icon("down") + '</button>' +
+            '</span></div>';
+        });
+      }
+      h += '</div>';
+    });
+    return h;
+  }
+
+  function routineEditorBody(r){
+    r = r || {days:[0,1,2,3,4], items:[]};
+    return '' +
+      '<label class="fld"><span>Routine name</span>' +
+        '<input type="text" name="name" maxlength="60" placeholder="e.g. Morning routine" value="' + esc(r.name||"") + '" required></label>' +
+      '<div class="fld"><span>Repeat on</span>' +
+        '<div class="day-picker" id="dayPicker">' + DOW.map(function(dn,i){
+          return '<button type="button" data-day="' + i + '" class="' + (r.days.indexOf(i) !== -1 ? "on" : "") + '" aria-pressed="' + (r.days.indexOf(i)!==-1) + '" onclick="DF.pickDay(this)">' + dn + '</button>';
+        }).join("") + '</div></div>' +
+      '<div class="fld"><span>Routine items</span>' +
+        '<div id="itemList"></div>' +
+        '<div class="inline-add"><input type="text" id="newItem" maxlength="100" placeholder="Add an item and press Enter" ' +
+        'onkeydown="if(event.key===\'Enter\'){event.preventDefault();DF.addEditorItem();}">' +
+        '<button type="button" class="btn btn-soft" onclick="DF.addEditorItem()">Add</button></div>' +
+      '</div>';
+  }
+  var editorItems = [];
+  function pickDay(btn){ btn.classList.toggle("on"); btn.setAttribute("aria-pressed", btn.classList.contains("on") ? "true" : "false"); }
+  function renderEditorItems(){
+    var box = document.getElementById("itemList");
+    if(!box) return;
+    if(editorItems.length === 0){
+      box.innerHTML = '<p class="small muted" style="margin:0">No items yet — add your first one below.</p>';
+      return;
+    }
+    box.innerHTML = editorItems.map(function(it, i){
+      return '<div class="rout-item"><span class="txt">' + esc(it.text) + '</span>' +
+        '<span class="mini-actions">' +
+          '<button type="button" class="btn-icon" aria-label="Move up" onclick="DF.moveEditorItem(' + i + ',-1)">' + icon("up") + '</button>' +
+          '<button type="button" class="btn-icon" aria-label="Move down" onclick="DF.moveEditorItem(' + i + ',1)">' + icon("down") + '</button>' +
+          '<button type="button" class="btn-icon" aria-label="Remove item" onclick="DF.removeEditorItem(' + i + ')">' + icon("trash") + '</button>' +
+        '</span></div>';
+    }).join("");
+  }
+  function addEditorItem(){
+    var inp = document.getElementById("newItem");
+    if(!inp) return;
+    var v = inp.value.trim();
+    if(!v){ inp.focus(); return; }
+    editorItems.push({id: uid(), text: v});
+    inp.value = ""; inp.focus();
+    renderEditorItems();
+  }
+  function moveEditorItem(i, dir){
+    var j = i + dir;
+    if(j < 0 || j >= editorItems.length) return;
+    var tmp = editorItems[i]; editorItems[i] = editorItems[j]; editorItems[j] = tmp;
+    renderEditorItems();
+  }
+  function removeEditorItem(i){ editorItems.splice(i,1); renderEditorItems(); }
+
+  function readRoutineForm(f){
+    var name = f.elements.name.value.trim();
+    if(!name){ f.elements.name.focus(); toast("Please name your routine", true); return null; }
+    var days = [];
+    f.querySelectorAll("#dayPicker button.on").forEach(function(b){ days.push(+b.dataset.day); });
+    if(days.length === 0){ toast("Pick at least one day", true); return null; }
+    if(editorItems.length === 0){ toast("Add at least one routine item", true); return null; }
+    return {name: name, days: days, items: editorItems.slice()};
+  }
+  function addRoutine(){
+    editorItems = [];
+    openModal("New routine", routineEditorBody(), "Create routine", function(f){
+      var data = readRoutineForm(f);
+      if(!data) return;
+      state.routines.push(normRoutine({name:data.name, days:data.days, items:data.items}));
+      closeModal(); persist("Routine created");
+    });
+    renderEditorItems();
+  }
+  function editRoutine(id){
+    var r = state.routines.filter(function(x){ return x.id === id; })[0];
+    if(!r) return;
+    editorItems = r.items.map(function(it){ return {id: it.id, text: it.text}; });
+    openModal("Edit routine", routineEditorBody(r), "Save changes", function(f){
+      var data = readRoutineForm(f);
+      if(!data) return;
+      r.name = data.name; r.days = data.days; r.items = data.items;
+      closeModal(); persist("Routine updated");
+    });
+    renderEditorItems();
+  }
+  function deleteRoutine(id){
+    var r = state.routines.filter(function(x){ return x.id === id; })[0];
+    if(!r) return;
+    var idx = state.routines.indexOf(r);
+    var oldLog = {};
+    Object.keys(state.routineLog).forEach(function(day){
+      if(state.routineLog[day] && state.routineLog[day][id] !== undefined){ oldLog[day] = state.routineLog[day][id]; delete state.routineLog[day][id]; }
+    });
+    state.routines.splice(idx,1); save(); render();
+    offerUndo("Routine deleted", function(){
+      state.routines.splice(idx,0,r);
+      Object.keys(oldLog).forEach(function(day){ if(!state.routineLog[day]) state.routineLog[day] = {}; state.routineLog[day][id] = oldLog[day]; });
+      save();
+    });
+  }
+  function reorderRoutineItem(routineId, itemId, dir){
+    var r = state.routines.filter(function(x){ return x.id === routineId; })[0];
+    if(!r) return;
+    var i = r.items.map(function(x){ return x.id; }).indexOf(itemId);
+    var j = i + dir;
+    if(i < 0 || j < 0 || j >= r.items.length) return;
+    var tmp = r.items[i]; r.items[i] = r.items[j]; r.items[j] = tmp;
+    save(); render();
+  }
+
+  /* =====================================================================
+     GOALS
+     ===================================================================== */
+  function goalProgress(g){
+    if(!g.steps || g.steps.length === 0) return 0;
+    return pct(g.steps.filter(function(s){ return s.done; }).length, g.steps.length);
+  }
+  function goalProgressAvg(){
+    if(state.goals.length === 0) return 0;
+    var sum = state.goals.reduce(function(a,g){ return a + goalProgress(g); }, 0);
+    return Math.round(sum / state.goals.length);
+  }
+
+  function renderGoals(){
+    var h = '<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">' +
+      '<div><div class="page-title">Goals</div>' +
+      '<div class="page-sub">Bigger things, broken into small steps.</div></div>' +
+      '<button class="btn btn-primary" onclick="DF.addGoal()">' + icon("plus") + 'New goal</button></div>';
+
+    if(state.goals.length === 0){
+      return h + '<div class="card">' + emptyState("goals","No goals yet",
+        "Add a goal and break it into steps you can tick off.", "Create a goal", "DF.addGoal()") + '</div>';
+    }
+
+    state.goals.forEach(function(g){
+      var p = goalProgress(g);
+      var doneSteps = (g.steps||[]).filter(function(s){ return s.done; }).length;
+      var over = g.targetDate && g.targetDate < todayStr() && p < 100;
+      h += '<div class="card" style="margin-top:16px"><div class="card-head">' +
+        '<div style="min-width:0"><div class="card-title">' + esc(g.title) + '</div>' +
+        (g.description ? '<div class="small muted" style="margin-top:3px">' + esc(g.description) + '</div>' : '') +
+        (g.targetDate ? '<div style="margin-top:7px"><span class="pill ' + (over ? "overdue" : "date") + '">' + icon("calendar","11") + 'Target ' + esc(fmtShort(g.targetDate)) + (over ? " — past" : "") + '</span></div>' : '') +
+        '</div>' +
+        '<div style="display:flex;gap:4px">' +
+          '<button class="btn-icon" aria-label="Edit goal" title="Edit goal" onclick="DF.editGoal(\'' + g.id + '\')">' + icon("edit") + '</button>' +
+          '<button class="btn-icon" aria-label="Delete goal" title="Delete goal" onclick="DF.deleteGoal(\'' + g.id + '\')">' + icon("trash") + '</button>' +
+        '</div></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<span class="small muted">' + doneSteps + " of " + (g.steps||[]).length + ' steps</span>' +
+          '<b style="font-size:13px">' + p + '%</b></div>' +
+        '<div class="bar' + (p === 100 ? "" : " sky") + '" style="margin-bottom:12px"><i style="width:' + p + '%"></i></div>';
+
+      h += '<div class="steps">';
+      if((g.steps||[]).length === 0){
+        h += '<p class="small muted" style="margin:4px 0">No steps yet — add one below.</p>';
+      } else {
+        g.steps.forEach(function(s){
+          h += '<div class="step' + (s.done ? " done" : "") + '">' +
+            '<button class="check' + (s.done ? " on" : "") + '" aria-pressed="' + (s.done?"true":"false") + '" aria-label="Toggle step ' + esc(s.text) + '" onclick="DF.toggleStep(\'' + g.id + '\',\'' + s.id + '\')">' + icon("check") + '</button>' +
+            '<span class="txt">' + esc(s.text) + '</span>' +
+            '<span class="mini-actions">' +
+              '<button class="btn-icon" aria-label="Edit step" onclick="DF.editStep(\'' + g.id + '\',\'' + s.id + '\')">' + icon("edit") + '</button>' +
+              '<button class="btn-icon" aria-label="Delete step" onclick="DF.deleteStep(\'' + g.id + '\',\'' + s.id + '\')">' + icon("trash") + '</button>' +
+            '</span></div>';
+        });
+      }
+      h += '</div>';
+      h += '<div class="inline-add"><input type="text" id="step_' + g.id + '" maxlength="100" placeholder="Add a step\u2026" aria-label="Add a step" ' +
+        'onkeydown="if(event.key===\'Enter\'){event.preventDefault();DF.addStep(\'' + g.id + '\');}">' +
+        '<button class="btn btn-soft" onclick="DF.addStep(\'' + g.id + '\')">Add step</button></div>';
+      h += '</div>';
+    });
+    return h;
+  }
+
+  function goalFormBody(g){
+    g = g || {};
+    return '<label class="fld"><span>Goal title</span>' +
+      '<input type="text" name="title" maxlength="100" placeholder="e.g. Learn to cook 5 new meals" value="' + esc(g.title||"") + '" required></label>' +
+      '<label class="fld"><span>Description <span class="muted">(optional)</span></span>' +
+      '<textarea name="description" maxlength="400" placeholder="Why does this matter to you?">' + esc(g.description||"") + '</textarea></label>' +
+      '<label class="fld"><span>Target date <span class="muted">(optional)</span></span>' +
+      '<input type="date" name="targetDate" value="' + esc(g.targetDate||"") + '"></label>';
+  }
+  function addGoal(){
+    openModal("New goal", goalFormBody(), "Create goal", function(f){
+      var title = f.elements.title.value.trim();
+      if(!title){ f.elements.title.focus(); toast("Please add a goal title", true); return; }
+      state.goals.push(normGoal({ title: title, description: f.elements.description.value.trim(),
+        targetDate: f.elements.targetDate.value || "", steps: [] }));
+      closeModal(); persist("Goal created");
+    });
+  }
+  function editGoal(id){
+    var g = state.goals.filter(function(x){ return x.id === id; })[0];
+    if(!g) return;
+    openModal("Edit goal", goalFormBody(g), "Save changes", function(f){
+      var title = f.elements.title.value.trim();
+      if(!title){ f.elements.title.focus(); toast("Please add a goal title", true); return; }
+      g.title = title; g.description = f.elements.description.value.trim(); g.targetDate = f.elements.targetDate.value || "";
+      closeModal(); persist("Goal updated");
+    });
+  }
+  function deleteGoal(id){
+    var g = state.goals.filter(function(x){ return x.id === id; })[0];
+    if(!g) return;
+    var idx = state.goals.indexOf(g);
+    state.goals.splice(idx,1); save(); render();
+    offerUndo("Goal deleted", function(){ state.goals.splice(idx,0,g); save(); });
+  }
+  function toggleStep(goalId, stepId){
+    var g = state.goals.filter(function(x){ return x.id === goalId; })[0];
+    if(!g) return;
+    var s = g.steps.filter(function(x){ return x.id === stepId; })[0];
+    if(!s) return;
+    s.done = !s.done; persist(s.done ? "Step complete" : null);
+  }
+  function addStep(goalId){
+    var g = state.goals.filter(function(x){ return x.id === goalId; })[0];
+    if(!g) return;
+    var inp = document.getElementById("step_" + goalId);
+    if(!inp) return;
+    var v = inp.value.trim();
+    if(!v){ inp.focus(); return; }
+    g.steps.push({id: uid(), text: v, done: false});
+    persist("Step added");
+  }
+  function editStep(goalId, stepId){
+    var g = state.goals.filter(function(x){ return x.id === goalId; })[0];
+    if(!g) return;
+    var s = g.steps.filter(function(x){ return x.id === stepId; })[0];
+    if(!s) return;
+    openModal("Edit step", '<label class="fld"><span>Step</span>' +
+      '<input type="text" name="text" maxlength="100" value="' + esc(s.text) + '" required></label>', "Save step", function(f){
+        var v = f.elements.text.value.trim();
+        if(!v){ f.elements.text.focus(); return; }
+        s.text = v; closeModal(); persist("Step updated");
+      });
+  }
+  function deleteStep(goalId, stepId){
+    var g = state.goals.filter(function(x){ return x.id === goalId; })[0];
+    if(!g) return;
+    var s = g.steps.filter(function(x){ return x.id === stepId; })[0];
+    var idx = g.steps.indexOf(s);
+    g.steps.splice(idx,1); save(); render();
+    offerUndo("Step removed", function(){ g.steps.splice(idx,0,s); save(); });
+  }
+
+  /* =====================================================================
+     MY LISTS
+     ===================================================================== */
+  function renderLists(){
+    var h = '<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">' +
+      '<div><div class="page-title">My Lists</div>' +
+      '<div class="page-sub">Books, recipes, shopping, projects — your way.</div></div>' +
+      '<button class="btn btn-primary" onclick="DF.addList()">' + icon("plus") + 'New list</button></div>';
+
+    if(state.lists.length === 0){
+      return h + '<div class="card">' + emptyState("lists","No lists yet",
+        "Create a list for anything you like to keep track of.", "Create a list", "DF.addList()") + '</div>';
+    }
+
+    h += '<div class="grid grid-2" style="margin-top:16px">';
+    state.lists.forEach(function(l){
+      var done = l.items.filter(function(i){ return i.done; }).length;
+      h += '<div class="card" style="margin-top:0">' +
+        '<div class="card-head"><div style="min-width:0"><div class="card-title">' + esc(l.name) + '</div>' +
+        '<div class="small muted" style="margin-top:2px">' + (l.items.length ? done + " of " + l.items.length + " checked" : "Empty list") + '</div></div>' +
+        '<div style="display:flex;gap:4px">' +
+          '<button class="btn-icon" aria-label="Rename list" title="Rename list" onclick="DF.renameList(\'' + l.id + '\')">' + icon("edit") + '</button>' +
+          '<button class="btn-icon" aria-label="Delete list" title="Delete list" onclick="DF.deleteList(\'' + l.id + '\')">' + icon("trash") + '</button>' +
+        '</div></div>';
+      if(l.items.length){
+        h += '<div class="bar" style="margin-bottom:10px"><i style="width:' + pct(done, l.items.length) + '%"></i></div>';
+        l.items.forEach(function(it){
+          h += '<div class="list-item' + (it.done ? " done" : "") + '">' +
+            '<button class="check' + (it.done ? " on" : "") + '" aria-pressed="' + (it.done?"true":"false") + '" aria-label="Toggle ' + esc(it.text) + '" onclick="DF.toggleListItem(\'' + l.id + '\',\'' + it.id + '\')">' + icon("check") + '</button>' +
+            '<span class="txt">' + esc(it.text) + '</span>' +
+            '<span class="mini-actions">' +
+              '<button class="btn-icon" aria-label="Move item up" onclick="DF.reorderListItem(\'' + l.id + '\',\'' + it.id + '\',-1)">' + icon("up") + '</button>' +
+              '<button class="btn-icon" aria-label="Move item down" onclick="DF.reorderListItem(\'' + l.id + '\',\'' + it.id + '\',1)">' + icon("down") + '</button>' +
+              '<button class="btn-icon" aria-label="Edit item" onclick="DF.editListItem(\'' + l.id + '\',\'' + it.id + '\')">' + icon("edit") + '</button>' +
+              '<button class="btn-icon" aria-label="Delete item" onclick="DF.deleteListItem(\'' + l.id + '\',\'' + it.id + '\')">' + icon("trash") + '</button>' +
+            '</span></div>';
+        });
+      } else {
+        h += '<p class="small muted" style="margin:0 0 4px">Nothing here yet.</p>';
+      }
+      h += '<div class="inline-add"><input type="text" id="li_' + l.id + '" maxlength="120" placeholder="Add an item\u2026" aria-label="Add an item" ' +
+        'onkeydown="if(event.key===\'Enter\'){event.preventDefault();DF.addListItem(\'' + l.id + '\');}">' +
+        '<button class="btn btn-soft" onclick="DF.addListItem(\'' + l.id + '\')">Add</button></div>';
+      h += '</div>';
+    });
+    h += '</div>';
+    return h;
+  }
+
+  function addList(){
+    openModal("New list", '<label class="fld"><span>List name</span>' +
+      '<input type="text" name="name" maxlength="60" placeholder="e.g. Recipes to try" required></label>', "Create list", function(f){
+        var v = f.elements.name.value.trim();
+        if(!v){ f.elements.name.focus(); toast("Please name your list", true); return; }
+        state.lists.push(normList({ name: v, items: [] }));
+        closeModal(); persist("List created");
+      });
+  }
+  function renameList(id){
+    var l = state.lists.filter(function(x){ return x.id === id; })[0];
+    if(!l) return;
+    openModal("Rename list", '<label class="fld"><span>List name</span>' +
+      '<input type="text" name="name" maxlength="60" value="' + esc(l.name) + '" required></label>', "Save name", function(f){
+        var v = f.elements.name.value.trim();
+        if(!v){ f.elements.name.focus(); return; }
+        l.name = v; closeModal(); persist("List renamed");
+      });
+  }
+  function deleteList(id){
+    var l = state.lists.filter(function(x){ return x.id === id; })[0];
+    if(!l) return;
+    var idx = state.lists.indexOf(l);
+    state.lists.splice(idx,1); save(); render();
+    offerUndo("List deleted", function(){ state.lists.splice(idx,0,l); save(); });
+  }
+  function toggleListItem(listId, itemId){
+    var l = state.lists.filter(function(x){ return x.id === listId; })[0];
+    if(!l) return;
+    var it = l.items.filter(function(x){ return x.id === itemId; })[0];
+    if(!it) return;
+    it.done = !it.done; persist(null);
+  }
+  function addListItem(listId){
+    var l = state.lists.filter(function(x){ return x.id === listId; })[0];
+    if(!l) return;
+    var inp = document.getElementById("li_" + listId);
+    if(!inp) return;
+    var v = inp.value.trim();
+    if(!v){ inp.focus(); return; }
+    l.items.push({id: uid(), text: v, done: false});
+    persist("Item added");
+  }
+  function editListItem(listId, itemId){
+    var l = state.lists.filter(function(x){ return x.id === listId; })[0];
+    if(!l) return;
+    var it = l.items.filter(function(x){ return x.id === itemId; })[0];
+    if(!it) return;
+    openModal("Edit item", '<label class="fld"><span>Item</span>' +
+      '<input type="text" name="text" maxlength="120" value="' + esc(it.text) + '" required></label>', "Save item", function(f){
+        var v = f.elements.text.value.trim();
+        if(!v){ f.elements.text.focus(); return; }
+        it.text = v; closeModal(); persist("Item updated");
+      });
+  }
+  function deleteListItem(listId, itemId){
+    var l = state.lists.filter(function(x){ return x.id === listId; })[0];
+    if(!l) return;
+    var it = l.items.filter(function(x){ return x.id === itemId; })[0];
+    var idx = l.items.indexOf(it);
+    l.items.splice(idx,1); save(); render();
+    offerUndo("Item removed", function(){ l.items.splice(idx,0,it); save(); });
+  }
+  function reorderListItem(listId, itemId, dir){
+    var l = state.lists.filter(function(x){ return x.id === listId; })[0];
+    if(!l) return;
+    var i = l.items.map(function(x){ return x.id; }).indexOf(itemId);
+    var j = i + dir;
+    if(i < 0 || j < 0 || j >= l.items.length) return;
+    var tmp = l.items[i]; l.items[i] = l.items[j]; l.items[j] = tmp;
+    save(); render();
+  }
+
+  /* =====================================================================
+     PROGRESS
+     ===================================================================== */
+  function renderProgress(){
+    var t = todayStr();
+    var weekStart = startOfWeek(t);
+    var days = [];
+    for(var i=0;i<7;i++) days.push(addDays(weekStart,i));
+
+    var perDay = days.map(function(d){
+      return state.tasks.filter(function(x){ return x.completed && x.completedAt === d; }).length;
+    });
+    var maxDay = Math.max.apply(null, perDay.concat([1]));
+    var weekTasks = perDay.reduce(function(a,b){ return a+b; }, 0);
+
+    var dueThisWeek = state.tasks.filter(function(x){ return x.dueDate >= weekStart && x.dueDate <= addDays(weekStart,6); });
+    var doneDueThisWeek = dueThisWeek.filter(function(x){ return x.completed; }).length;
+
+    var rTot = 0, rDone = 0;
+    days.forEach(function(d){
+      state.routines.forEach(function(r){
+        if(r.days.indexOf(dowIdx(d)) === -1) return;
+        rTot += r.items.length;
+        rDone += r.items.filter(function(it){ return isItemDone(d, r.id, it.id); }).length;
+      });
+    });
+
+    var gAvg = goalProgressAvg();
+    var goalsDone = state.goals.filter(function(g){ return goalProgress(g) === 100; }).length;
+
+    var h = '<div class="page-head"><div class="page-title">Progress</div>' +
+      '<div class="page-sub">A gentle look at your week — every step counts. All figures come from what you\u2019ve actually saved.</div></div>';
+
+    h += '<div class="grid grid-3">' +
+      statCard(weekTasks, "tasks completed this week") +
+      statCard(pct(rDone, rTot) + "%", "routine steps ticked") +
+      statCard(gAvg + "%", "average goal progress") +
+    '</div>';
+
+    h += '<div class="card" style="margin-top:16px"><div class="card-head"><div class="card-title"><span class="tick" style="background:var(--sky)"></span>Tasks completed each day</div>' +
+      '<span class="small muted">This week</span></div>';
+    h += '<div class="chart">';
+    days.forEach(function(d, i){
+      var v = perDay[i];
+      var hp = Math.round(v / maxDay * 100);
+      h += '<div class="col"><div class="stack" title="' + v + ' tasks"><i style="height:' + (v ? Math.max(hp,8) : 0) + '%"></i></div>' +
+        '<div class="dl">' + DOW[i] + '</div></div>';
+    });
+    h += '</div>';
+    if(weekTasks === 0){
+      h += '<p class="small muted" style="margin:12px 0 0;text-align:center">No tasks completed yet this week. Whenever you tick one off, it will show up here.</p>';
+    }
+    h += '</div>';
+
+    h += '<div class="card" style="margin-top:16px"><div class="card-head"><div class="card-title"><span class="tick"></span>Weekly summary</div></div>';
+    var taskRate = pct(doneDueThisWeek, dueThisWeek.length);
+    h += summaryRow("Tasks due this week", doneDueThisWeek + " of " + dueThisWeek.length + " complete", taskRate, "");
+    var routineRate = pct(rDone, rTot);
+    h += summaryRow("Routine steps", rDone + " of " + rTot + " ticked", routineRate, "lav");
+    h += summaryRow("Goal progress", goalsDone + " of " + state.goals.length + " goals finished", gAvg, "sky");
+    h += '</div>';
+
+    var msg;
+    if(weekTasks === 0 && rDone === 0){
+      msg = "A fresh week. Pick one small task and start there — momentum builds quickly.";
+    } else if(taskRate >= 70 || routineRate >= 70){
+      msg = "You\u2019re doing brilliantly this week. Keep the flow going, and rest when you need to.";
+    } else {
+      msg = "Progress is progress, however small. You\u2019ve already taken " + (weekTasks + rDone) + " steps this week.";
+    }
+    h += '<div class="card" style="margin-top:16px;background:linear-gradient(120deg,var(--sage-soft),var(--sky-soft))">' +
+      '<div style="display:flex;gap:12px;align-items:flex-start">' +
+      '<div style="color:var(--forest)">' + icon("sparkle","22") + '</div>' +
+      '<div><b style="font-size:14px">A note for you</b><p style="margin:4px 0 0;font-size:13.5px;color:#4A4741">' + esc(msg) + '</p></div>' +
+      '</div></div>';
+
+    return h;
+  }
+  function statCard(n, l){
+    return '<div class="stat"><div class="n">' + n + '</div><div class="l">' + esc(l) + '</div></div>';
+  }
+  function summaryRow(label, detail, percent, tone){
+    return '<div style="margin-bottom:15px">' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:5px">' +
+        '<span style="font-size:13.5px;font-weight:550">' + esc(label) + '</span>' +
+        '<span class="small muted">' + esc(detail) + '</span></div>' +
+      '<div class="bar ' + (tone||"") + '"><i style="width:' + percent + '%"></i></div></div>';
+  }
+
+  /* =====================================================================
+     SETTINGS · BACKUP · FEEDBACK · SHARE · PRICING · PRIVACY
+     ===================================================================== */
+  function countsSummary(){
+    return state.tasks.length + " tasks, " + state.routines.length + " routines, " +
+      state.goals.length + " goals, " + state.lists.length + " lists";
+  }
+  function openSettings(){
+    var storageText = storageOK
+      ? "Saved in this browser only (" + countsSummary() + ")."
+      : "Browser storage is blocked — changes last only for this session.";
+    var body =
+      '<div class="set-row"><div class="grow"><b>Where your data lives</b>' +
+        '<div class="sub">' + esc(storageText) + ' DayFlow has no accounts and no cloud sync, so data does not follow you between devices or browsers.</div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>Back up or move your data</b>' +
+        '<div class="sub">Export a backup file you can keep, or import one to restore. This is the safest way to move DayFlow to another device.</div>' +
+        '<div class="set-actions">' +
+          '<button type="button" class="btn btn-sm btn-soft" onclick="DF.exportData()">' + icon("download") + 'Export backup</button>' +
+          '<button type="button" class="btn btn-sm btn-ghost" onclick="DF.importData()">' + icon("upload") + 'Import backup</button>' +
+        '</div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>Dates &amp; time</b>' +
+        '<div class="sub">DayFlow uses your device\u2019s local date and time zone. All dates are stored as plain calendar dates (no time-of-day), so planning stays correct wherever you are.</div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>Learn how DayFlow works</b>' +
+        '<div class="sub">Replay the short welcome tour any time.</div>' +
+        '<div class="set-actions"><button type="button" class="btn btn-sm btn-ghost" onclick="DF.closeModal();DF.startTour()">Replay welcome tour</button></div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>Help shape DayFlow</b>' +
+        '<div class="sub">Send a bug report, an idea, or tell us what you\u2019d pay for. Feedback is optional and nothing is sent automatically.</div>' +
+        '<div class="set-actions">' +
+          '<button type="button" class="btn btn-sm btn-soft" onclick="DF.openFeedback()">' + icon("heart") + 'Send feedback</button>' +
+          '<button type="button" class="btn btn-sm btn-ghost" onclick="DF.shareApp()">' + icon("share") + 'Share DayFlow</button>' +
+        '</div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>Plans</b>' +
+        '<div class="sub">See what\u2019s free now and what\u2019s planned for DayFlow Plus.</div>' +
+        '<div class="set-actions">' +
+          '<button type="button" class="btn btn-sm btn-ghost" onclick="DF.openPricing()">View plans</button>' +
+          '<button type="button" class="btn btn-sm btn-ghost" onclick="DF.openPrivacy()">Privacy</button>' +
+        '</div></div></div>' +
+      '<div class="set-row"><div class="grow"><b>About</b>' +
+        '<div class="sub">DayFlow v' + APP_VERSION + ' · single-file app · no external services.</div></div></div>' +
+      '<div class="danger"><b style="font-size:14px">Reset DayFlow</b>' +
+        '<div class="sub" style="margin:4px 0 10px">Delete all tasks, routines, goals and lists on this device. Export a backup first if you might want them back.</div>' +
+        '<button type="button" class="btn btn-sm btn-danger-soft" onclick="DF.resetAll()">Delete all data</button></div>';
+    openModal("Settings & backup", body, null, null, { wide:true, cancelLabel:"Close" });
+  }
+
+  function exportData(){
+    try{
+      var data = JSON.stringify(state, null, 2);
+      var blob = new Blob([data], { type:"application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = "dayflow-backup-" + todayStr() + ".json";
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      toast("Backup downloaded");
+    }catch(e){ toast("Couldn't create the backup file", true); }
+  }
+  function importData(){
+    var inp = document.getElementById("importFile");
+    if(!inp) return;
+    inp.value = "";
+    inp.onchange = function(){
+      var file = inp.files && inp.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        var d;
+        try{ d = JSON.parse(reader.result); }
+        catch(e){ toast("That file isn\u2019t valid DayFlow data", true); return; }
+        if(!d || typeof d !== "object" || (!d.tasks && !d.routines && !d.goals && !d.lists)){
+          toast("That file isn\u2019t a DayFlow backup", true); return;
+        }
+        if(!confirm("Replace all current DayFlow data with this backup?")) return;
+        applyState(d);
+        state.bannerDismissed = true;
+        var r = save(); render();
+        toast(r === "error" ? "Couldn't save the imported backup" : "Backup restored", r === "error");
+      };
+      reader.onerror = function(){ toast("Couldn't read that file", true); };
+      reader.readAsText(file);
+    };
+    inp.click();
+  }
+  function resetAll(){
+    if(!confirm("Delete ALL DayFlow data on this device? This cannot be undone.")) return;
+    state = blankState();
+    state.onboarded = true;
+    state.bannerDismissed = true;
+    var r = save(); render();
+    toast(r === "error" ? "Couldn't clear data" : "All data cleared", r === "error");
+  }
+
+  function openPricing(){
+    var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg>';
+    var body =
+      '<p class="small muted" style="margin:0 0 14px">DayFlow is free to use today. DayFlow Plus is a <b>plan</b> — nothing below is for sale yet and no payment can be taken in the app.</p>' +
+      '<div class="plans">' +
+        '<div class="plan"><h4>Free</h4><div class="price">£0</div><div class="small muted">Available now</div><ul>' +
+          '<li>' + check + 'Today dashboard &amp; quick add</li>' +
+          '<li>' + check + 'Tasks with due dates &amp; priorities</li>' +
+          '<li>' + check + 'Day &amp; week planner</li>' +
+          '<li>' + check + 'Routines with per-day tracking</li>' +
+          '<li>' + check + 'Goals with steps</li>' +
+          '<li>' + check + 'Unlimited custom lists</li>' +
+          '<li>' + check + 'Basic weekly progress</li>' +
+          '<li>' + check + 'Local backup export &amp; import</li>' +
+        '</ul></div>' +
+        '<div class="plan plus"><h4>DayFlow Plus <span class="badge-planned">Planned</span></h4>' +
+          '<div class="price">TBD</div><div class="small muted">Not available yet — nothing to buy</div><ul>' +
+          '<li class="planned">' + check + 'Cloud sync across devices <span class="badge-planned" style="margin-left:6px">Planned</span></li>' +
+          '<li class="planned">' + check + 'Advanced planning &amp; calendar views <span class="badge-planned" style="margin-left:6px">Planned</span></li>' +
+          '<li class="planned">' + check + 'Deeper progress insights &amp; trends <span class="badge-planned" style="margin-left:6px">Planned</span></li>' +
+          '<li class="planned">' + check + 'Themes &amp; customisation <span class="badge-planned" style="margin-left:6px">Planned</span></li>' +
+        '</ul></div>' +
+      '</div>' +
+      '<div class="banner" style="margin:16px 0 0"><span class="grow"><b>Why no paywall yet?</b> Paid features will only ship once they genuinely exist and payment is set up securely. The free version is the real product for now.</span></div>';
+    openModal("Plans", body, null, null, { wide:true, cancelLabel:"Close" });
+  }
+
+  function openPrivacy(){
+    var body =
+      '<p style="margin-top:0">DayFlow is designed to collect as little as possible.</p>' +
+      '<ul style="padding-left:18px;font-size:13.5px;line-height:1.7">' +
+        '<li><b>No accounts.</b> You don\u2019t sign up, so we hold no personal profile.</li>' +
+        '<li><b>No tracking.</b> No analytics scripts, cookies, pixels or third-party services are loaded by the app.</li>' +
+        '<li><b>Your data stays on your device.</b> Tasks, routines, goals and lists are saved in your browser\u2019s local storage on this device only.</li>' +
+        '<li><b>Feedback is voluntary.</b> Nothing is sent automatically — the feedback form only opens your own email app or copies text for you to send.</li>' +
+        '<li><b>You\u2019re in control.</b> Export a backup or delete everything from Settings at any time.</li>' +
+      '</ul>' +
+      '<p class="small muted">Because data is stored locally, clearing your browser data will remove it. Keep a backup via Settings if it matters to you.</p>';
+    openModal("Privacy", body, null, null, { cancelLabel:"Close" });
+  }
+
+  function openFeedback(){
+    var emailConfigured = CONTACT_EMAIL.indexOf("example") === -1;
+    var body =
+      '<p class="small muted" style="margin-top:0">Optional and short. Nothing is sent automatically — this ' +
+        (emailConfigured ? 'opens your email app with the message ready to send.' : 'copies your message so you can send it yourself.') + '</p>' +
+      '<label class="fld"><span>What is this about?</span><select name="fbType">' +
+        '<option>Bug report</option><option>Feature suggestion</option>' +
+        '<option>What I use most</option><option>Would I pay for this?</option><option>Other</option>' +
+      '</select></label>' +
+      '<label class="fld"><span>Your message</span><textarea name="fbMsg" maxlength="1500" placeholder="Tell us what happened or what you\u2019d like to see" required></textarea></label>' +
+      '<label class="fld"><span>Email <span class="muted">(optional — only if you want a reply)</span></span>' +
+        '<input type="email" name="fbEmail" maxlength="120" placeholder="you@example.com"></label>' +
+      '<div class="fld"><span>Would you consider paying for any of these? <span class="muted">(optional)</span></span>' +
+        '<label class="check-line"><input type="checkbox" name="wants" value="Cloud sync across devices"> Cloud sync across devices</label>' +
+        '<label class="check-line"><input type="checkbox" name="wants" value="Advanced planning / calendar views"> Advanced planning &amp; calendar views</label>' +
+        '<label class="check-line"><input type="checkbox" name="wants" value="Deeper progress insights"> Deeper progress insights</label>' +
+        '<label class="check-line"><input type="checkbox" name="wants" value="Themes and customisation"> Themes &amp; customisation</label>' +
+      '</div>';
+    openModal("Send feedback", body, emailConfigured ? "Open email app" : "Copy feedback", function(f){
+      var msg = f.elements.fbMsg.value.trim();
+      if(!msg){ f.elements.fbMsg.focus(); toast("Please add a short message", true); return; }
+      var wants = [];
+      f.querySelectorAll("input[name=wants]:checked").forEach(function(c){ wants.push(c.value); });
+      var email = f.elements.fbEmail.value.trim();
+      var text = "DayFlow feedback\n\nType: " + f.elements.fbType.value +
+        "\n\nMessage:\n" + msg +
+        "\n\nInterested in (paid features): " + (wants.length ? wants.join(", ") : "none") +
+        "\nReply to: " + (email || "(not provided)") +
+        "\n\nApp version: " + APP_VERSION + "\nSent: " + new Date().toLocaleString();
+      if(emailConfigured){
+        window.location.href = "mailto:" + CONTACT_EMAIL +
+          "?subject=" + encodeURIComponent("DayFlow feedback: " + f.elements.fbType.value) +
+          "&body=" + encodeURIComponent(text);
+        closeModal(); toast("Opening your email app\u2026");
+      } else {
+        copyText(text, "Feedback copied — paste it to send it to the DayFlow team");
+        closeModal();
+      }
+    });
+  }
+
+  function shareApp(){
+    var url = window.location.href.split("?")[0].split("#")[0];
+    if(navigator.share){
+      navigator.share({ title:"DayFlow", text:"A calm, simple planner for your day.", url: url }).catch(function(){});
+    } else {
+      copyText(url, "Link copied — share it with someone who\u2019d like to test DayFlow");
+    }
+  }
+
+  /* =====================================================================
+     ONBOARDING
+     ===================================================================== */
+  function welcomeHtml(){
+    return '' +
+      '<div class="welcome-hero">' +
+        '<div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg></div>' +
+        '<h2>Welcome to DayFlow</h2>' +
+        '<p>Your day, organised around your life. Plan tasks, build routines, track goals and keep your lists — all in one calm place.</p>' +
+      '</div>' +
+      '<div class="welcome-body">' +
+        '<div class="tour-point"><div class="num">1</div><div><b>Plan your day</b><p>Add tasks with a due date and priority, then tick them off as you go.</p></div></div>' +
+        '<div class="tour-point"><div class="num">2</div><div><b>Build routines</b><p>Create morning or evening routines that repeat on the days you choose.</p></div></div>' +
+        '<div class="tour-point"><div class="num">3</div><div><b>Grow goals &amp; lists</b><p>Break goals into steps and keep any kind of list you like.</p></div></div>' +
+      '</div>' +
+      '<div class="welcome-foot">' +
+        '<button class="btn btn-primary btn-block" onclick="DF.finishOnboarding(\'task\')">Add my first task</button>' +
+        '<button class="btn btn-ghost btn-block" onclick="DF.finishOnboarding(\'sample\')">Explore with example content</button>' +
+        '<button class="btn btn-ghost btn-block" onclick="DF.finishOnboarding(\'empty\')">Start with an empty app</button>' +
+      '</div>';
+  }
+  function showWelcome(){
+    if(EMBED) return;
+    document.getElementById("welcomeCard").innerHTML = welcomeHtml();
+    document.getElementById("welcome").classList.add("open");
+  }
+  function hideWelcome(){ document.getElementById("welcome").classList.remove("open"); }
+  function startTour(){ showWelcome(); }
+  function finishOnboarding(mode){
+    state.onboarded = true;
+    if(mode === "empty"){ removeExamples(true); }
+    if(mode === "sample"){ if(!hasExamples()) seed(); state.bannerDismissed = false; }
+    hideWelcome();
+    save(); render();
+    if(mode === "task"){ addTask(todayStr()); }
+    else toast("You\u2019re all set");
+  }
+
+  /* =====================================================================
+     RENDER
+     ===================================================================== */
+  function render(){
+    renderNav();
+    var view = document.getElementById("view");
+    if(ui.tab === "today") view.innerHTML = renderToday();
+    else if(ui.tab === "planner") view.innerHTML = renderPlanner();
+    else if(ui.tab === "routines") view.innerHTML = renderRoutines();
+    else if(ui.tab === "goals") view.innerHTML = renderGoals();
+    else if(ui.tab === "lists") view.innerHTML = renderLists();
+    else if(ui.tab === "progress") view.innerHTML = renderProgress();
+  }
+
+  /* ---------- Expose handlers ---------- */
+  window.DF = {
+    go: go, closeModal: closeModal, toast: toast,
+    addTask: addTask, editTask: editTask, toggleTask: toggleTask, deleteTask: deleteTask, moveTask: moveTask,
+    quickAddTask: quickAddTask, moveUnfinishedToTomorrow: moveUnfinishedToTomorrow,
+    clearExamples: clearExamples, dismissBanner: dismissBanner,
+    setPlannerMode: setPlannerMode, selectDay: selectDay, gotoToday: gotoToday, shiftWeek: shiftWeek,
+    addRoutine: addRoutine, editRoutine: editRoutine, deleteRoutine: deleteRoutine,
+    toggleRoutineItem: toggleRoutineItem, reorderRoutineItem: reorderRoutineItem,
+    pickDay: pickDay, addEditorItem: addEditorItem, moveEditorItem: moveEditorItem, removeEditorItem: removeEditorItem,
+    addGoal: addGoal, editGoal: editGoal, deleteGoal: deleteGoal,
+    toggleStep: toggleStep, addStep: addStep, editStep: editStep, deleteStep: deleteStep,
+    addList: addList, renameList: renameList, deleteList: deleteList,
+    toggleListItem: toggleListItem, addListItem: addListItem, editListItem: editListItem,
+    deleteListItem: deleteListItem, reorderListItem: reorderListItem,
+    openSettings: openSettings, exportData: exportData, importData: importData, resetAll: resetAll,
+    openPricing: openPricing, openPrivacy: openPrivacy, openFeedback: openFeedback, shareApp: shareApp,
+    showWelcome: showWelcome, startTour: startTour, finishOnboarding: finishOnboarding
+  };
+
+  /* ---------- Boot ---------- */
+  function boot(){
+    var saved = loadRaw();
+    if(saved && typeof saved === "object"){
+      applyState(saved);
+    } else {
+      seed();
+    }
+    save(); // persist migrations and first-run seed immediately
+    if(!storageOK){
+      setTimeout(function(){ toast("Storage is unavailable — changes last only for this session", true); }, 700);
+    }
+    render();
+    if(!state.onboarded) showWelcome();
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

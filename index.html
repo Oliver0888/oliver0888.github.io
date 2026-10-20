@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#F7F4EE" />
+<title>DayFlow — your day, organised around your life</title>
+<meta name="description" content="DayFlow is a calm, simple planner for your tasks, routines, goals and lists. Free to use, private by design, and easy on any device." />
+<meta property="og:title" content="DayFlow — your day, organised around your life" />
+<meta property="og:description" content="A calm, simple planner for tasks, routines, goals and lists. Free, private, and works on any device." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232F4A34'/%3E%3Cpath d='M5 12a7 7 0 1 0 7-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M5 5v4h4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 8.5V12l2.5 1.5' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#F7F4EE; --surface:#FFFFFF; --surface-2:#FCFAF6;
+    --ink:#2A2C28; --muted:#6E6B62; --line:#E7E2D8;
+    --forest:#2F4A34; --forest-hover:#263D2A; --forest-soft:#E4EDE3;
+    --sage:#6F9A6A; --sage-soft:#E8F0E5;
+    --sky:#4F84BD; --sky-soft:#E7EFF9;
+    --lav:#7E6FC4; --lav-soft:#EEEAF9;
+    --peach:#C07A45; --peach-soft:#FBEDE1;
+    --shadow:0 1px 2px rgba(42,44,40,.04), 0 14px 34px -20px rgba(42,44,40,.30);
+    --shadow-lg:0 24px 60px -24px rgba(42,44,40,.40);
+    --r-lg:22px; --r-md:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  p{margin:0 0 1em}
+  a{color:var(--forest)}
+  :focus-visible{outline:2px solid var(--forest);outline-offset:3px;border-radius:8px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;
+    border-radius:999px;padding:13px 22px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer;
+    transition:transform .08s,background .15s,box-shadow .15s}
+  .btn:active{transform:scale(.98)}
+  .btn svg{width:17px;height:17px}
+  .btn-primary{background:var(--forest);color:#fff;box-shadow:0 10px 24px -12px rgba(47,74,52,.8)}
+  .btn-primary:hover{background:var(--forest-hover)}
+  .btn-ghost{background:var(--surface);border-color:var(--line);color:#4F4C45}
+  .btn-ghost:hover{background:var(--surface-2)}
+  .btn-sm{padding:9px 16px;font-size:14px}
+
+  /* Nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(247,244,238,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;gap:14px;padding:13px 0}
+  .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink)}
+  .logo{width:38px;height:38px;border-radius:12px;flex:0 0 38px;background:linear-gradient(135deg,var(--forest),var(--sage) 60%,var(--sky));display:grid;place-items:center;box-shadow:var(--shadow)}
+  .logo svg{width:20px;height:20px}
+  .brand b{font-size:18px;font-weight:750;letter-spacing:-.02em}
+  .brand span{font-size:11.5px;color:var(--muted);display:block;margin-top:-3px}
+  .nav-links{display:flex;gap:22px;margin-left:auto}
+  .nav-links a{color:#514E47;text-decoration:none;font-size:14.5px;font-weight:550}
+  .nav-links a:hover{color:var(--forest)}
+  @media (max-width:820px){ .nav-links{display:none} }
+
+  /* Hero */
+  .hero{padding:64px 0 40px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--sage-soft);color:var(--forest);
+    font-size:12.5px;font-weight:650;padding:6px 13px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(32px,4.6vw,50px)}
+  .hero .lede{font-size:18px;color:#514E47;margin:16px 0 26px;max-width:34em}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .hero-note{font-size:13px;color:var(--muted);margin-top:14px}
+
+  /* Device frame + live preview */
+  .frame{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:12px;box-shadow:var(--shadow-lg)}
+  .frame .screen{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--bg);height:560px;position:relative}
+  .frame iframe{width:100%;height:100%;border:0;display:block;background:var(--bg)}
+  .frame-cap{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--muted);padding-top:11px}
+  .dot-live{width:8px;height:8px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px var(--sage-soft)}
+
+  section{padding:56px 0}
+  .sec-head{max-width:44em;margin-bottom:34px}
+  .sec-head h2{font-size:clamp(24px,3vw,32px)}
+  .sec-head p{color:var(--muted);font-size:16.5px;margin-top:12px}
+
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow)}
+  .card .ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px}
+  .card .ico svg{width:22px;height:22px}
+  .card h3{font-size:16.5px;margin-bottom:6px}
+  .card p{font-size:14px;color:var(--muted);margin:0}
+  .bg-sage{background:var(--sage-soft);color:var(--forest)}
+  .bg-sky{background:var(--sky-soft);color:#33608F}
+  .bg-lav{background:var(--lav-soft);color:#5A4CA6}
+  .bg-peach{background:var(--peach-soft);color:#8E5527}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow)}
+  .step .num{width:34px;height:34px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;margin-bottom:13px}
+  .step h3{font-size:16px;margin-bottom:6px}
+  .step p{font-size:14px;color:var(--muted);margin:0}
+
+  .problem{background:linear-gradient(140deg,#FFFFFF,#F1F7F0);border:1px solid var(--line);border-radius:var(--r-lg);padding:38px;box-shadow:var(--shadow)}
+  .problem h2{font-size:clamp(22px,2.6vw,28px);max-width:30em}
+  .problem p{color:#514E47;margin:14px 0 0;max-width:52em}
+
+  /* Pricing */
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow)}
+  .plan.plus{border-color:var(--forest);background:linear-gradient(160deg,#F4F8F3,#FFFFFF)}
+  .plan h3{font-size:18px;display:flex;align-items:center;gap:10px}
+  .plan .price{font-size:30px;font-weight:750;margin:10px 0 2px;letter-spacing:-.03em}
+  .plan .sub{color:var(--muted);font-size:13px}
+  .plan ul{list-style:none;padding:0;margin:16px 0 0}
+  .plan li{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:14.5px}
+  .plan li svg{width:16px;height:16px;flex:0 0 16px;color:var(--forest);margin-top:4px}
+  .plan li.planned{color:var(--muted)}
+  .badge{background:var(--peach-soft);color:#8E5527;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  .badge.free{background:var(--sage-soft);color:var(--forest)}
+  .plan .cta{margin-top:18px}
+
+  /* FAQ */
+  details{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow)}
+  details summary{cursor:pointer;font-weight:650;font-size:15px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  details summary::-webkit-details-marker{display:none}
+  details summary:after{content:"+";color:var(--muted);font-weight:700;font-size:18px;line-height:1}
+  details[open] summary:after{content:"–"}
+  details p{margin:12px 0 0;color:var(--muted);font-size:14.5px}
+
+  .band{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:34px;box-shadow:var(--shadow);display:flex;gap:22px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .band h2{font-size:clamp(21px,2.6vw,27px)}
+  .band p{color:var(--muted);margin:8px 0 0;max-width:38em}
+
+  footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--muted);font-size:13.5px}
+  .foot-grid{display:flex;gap:20px;flex-wrap:wrap;justify-content:space-between;align-items:flex-start}
+  .foot-links{display:flex;gap:18px;flex-wrap:wrap}
+  .foot-links a{color:#514E47;text-decoration:none}
+  .foot-links a:hover{color:var(--forest)}
+  .honest{font-size:12.5px;color:var(--muted);margin-top:14px;max-width:60em}
+
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr;gap:30px}
+    .hero{padding:40px 0 20px}
+    .cards{grid-template-columns:1fr 1fr}
+    .steps{grid-template-columns:1fr}
+    .plans{grid-template-columns:1fr}
+    .frame .screen{height:520px}
+    section{padding:40px 0}
+    .problem,.band{padding:26px}
+  }
+  @media (max-width:560px){ .cards{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){ *{transition-duration:.001ms !important;scroll-behavior:auto} }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg></span>
+      <span><b>DayFlow</b><span>your day, in flow</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="dayflow.html" style="margin-left:auto">Open DayFlow</a>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Free · private · no sign-up</span>
+      <h1>Your day, organised around your life.</h1>
+      <p class="lede">DayFlow is a calm, simple planner that brings your tasks, routines, goals and personal lists together in one place — so you can stop juggling apps and just get on with your day.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="dayflow.html">Try DayFlow free</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="hero-note">No account needed. Your data is stored privately in your own browser.</p>
+    </div>
+    <div>
+      <div class="frame">
+        <div class="screen">
+          <iframe src="dayflow.html?embed=1" title="Live preview of the DayFlow app" loading="lazy"></iframe>
+        </div>
+        <div class="frame-cap"><span class="dot-live" aria-hidden="true"></span> This is the real app — live and interactive</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Everything you need to feel on top of your day</h2>
+      <p>Six simple sections, one consistent design. Nothing complicated, nothing you have to learn.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="ico bg-sage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9l6 3"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Today at a glance</h3><p>A friendly dashboard with today's tasks, top priorities, routines and a clear progress ring.</p></div>
+      <div class="card"><div class="ico bg-sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></div><h3>Plan your week</h3><p>Day and week views let you add, edit, complete and move tasks — including unfinished ones to another day.</p></div>
+      <div class="card"><div class="ico bg-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 12h10M4 17h7"/><path d="M17.5 15.5l2 2 3.5-4"/></svg></div><h3>Build routines</h3><p>Create morning or evening routines that repeat on chosen days, and tick them off each day.</p></div>
+      <div class="card"><div class="ico bg-peach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg></div><h3>Goals &amp; lists</h3><p>Break goals into steps that track their own progress, and keep any list you like — books, recipes, shopping.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="problem">
+      <h2>Productivity tools shouldn't add to the overwhelm</h2>
+      <p>Most planners are either too basic to be useful or so packed with features that setting them up becomes another job. DayFlow takes a different approach: six focused sections, one calm design, and a clear answer to the only question that matters in the morning — <b>what should I do next?</b></p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><h2>Get value in your first minute</h2><p>No long setup, no questionnaire, no personal details.</p></div>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h3>Add your first task</h3><p>Type it, pick a due date and priority, and you're planning. The quick-add box on Today keeps it to one line.</p></div>
+      <div class="step"><div class="num">2</div><h3>Build a routine</h3><p>Choose the days it repeats and add the steps. Tick them off daily — history is kept automatically.</p></div>
+      <div class="step"><div class="num">3</div><h3>Watch your progress</h3><p>Real numbers from what you've actually completed, with encouraging copy and no guilt.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head"><h2>Free today. Plus is a plan, not a purchase.</h2><p>DayFlow is genuinely useful for free. Paid features will only exist once they're built and tested — nothing here is for sale yet.</p></div>
+    <div class="plans">
+      <div class="plan">
+        <h3>Free <span class="badge free">Available now</span></h3>
+        <div class="price">£0</div>
+        <div class="sub">Everything you need to plan your day</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Today dashboard &amp; quick add</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Tasks with due dates &amp; priorities</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Day &amp; week planner</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Routines, goals &amp; unlimited lists</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Weekly progress &amp; local backup</li>
+        </ul>
+        <div class="cta"><a class="btn btn-primary" href="dayflow.html">Open DayFlow</a></div>
+      </div>
+      <div class="plan plus">
+        <h3>DayFlow Plus <span class="badge">Planned</span></h3>
+        <div class="price">TBD</div>
+        <div class="sub">Not available yet — nothing to buy</div>
+        <ul>
+          <li class="planned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Cloud sync across devices <span class="badge" style="margin-left:6px">Planned</span></li>
+          <li class="planned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Advanced planning &amp; calendar views <span class="badge" style="margin-left:6px">Planned</span></li>
+          <li class="planned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Deeper progress insights <span class="badge" style="margin-left:6px">Planned</span></li>
+          <li class="planned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Themes &amp; customisation <span class="badge" style="margin-left:6px">Planned</span></li>
+        </ul>
+        <div class="cta"><a class="btn btn-ghost" href="#feedback">Tell us what you'd pay for</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head"><h2>Questions</h2></div>
+    <details open><summary>Is DayFlow really free?</summary><p>Yes. Everything you can do in the app today is free, with no account and no time limit. A paid "Plus" tier is planned, but it doesn't exist yet and nothing is for sale.</p></details>
+    <details><summary>Where is my data stored?</summary><p>In your own browser, on your own device. DayFlow has no server and no accounts, so your tasks never leave your device unless you choose to export a backup. Because it's local, clearing your browser data will remove it — use the Export button in Settings to keep a safe copy.</p></details>
+    <details><summary>Do I need to sign up?</summary><p>No. There's no sign-up and no personal information required. Open the app and start planning.</p></details>
+    <details><summary>Does it work on my phone?</summary><p>Yes. DayFlow is designed mobile-first, with a bottom navigation bar on phones and a sidebar on larger screens. It works on phones, tablets and computers.</p></details>
+    <details><summary>Will my data sync between devices?</summary><p>Not yet. Sync is a planned Plus feature and has not been built. For now you can move your data between devices manually using Export and Import in Settings.</p></details>
+    <details><summary>Is this finished?</summary><p>It's an honest first version built to be tested with real people. Feedback is genuinely welcome — it shapes what gets built next.</p></details>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2>Private by design</h2>
+        <p>No accounts, no analytics scripts, no cookies, no tracking, no third-party services. Your data stays in your browser. Feedback is always optional and is never sent automatically. You can export or delete everything at any time from Settings.</p>
+      </div>
+      <a class="btn btn-ghost" href="dayflow.html">Open DayFlow</a>
+    </div>
+  </div>
+</section>
+
+<section id="feedback">
+  <div class="wrap">
+    <div class="band" style="background:linear-gradient(140deg,#FFFFFF,#F1F7F0)">
+      <div>
+        <h2>Help shape what comes next</h2>
+        <p>Found a bug, have an idea, or want to say which paid features you'd actually value? Open DayFlow and use <b>Settings → Send feedback</b>. It's short, optional, and nothing is collected without you sending it.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="dayflow.html">Open DayFlow</a>
+        <a class="btn btn-ghost" href="mailto:hello@example.com?subject=DayFlow%20feedback">Email us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="margin-bottom:10px">
+          <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg></span>
+          <span><b>DayFlow</b><span>your day, in flow</span></span>
+        </div>
+        <div>A calm, simple planner for tasks, routines, goals and lists.</div>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#privacy">Privacy</a>
+        <a href="dayflow.html">Open app</a>
+        <a href="mailto:hello@example.com">Contact</a>
+      </nav>
+    </div>
+    <p class="honest">DayFlow is an early, independent project. Nothing on this page is a testimonial, user count or award — it describes only what the app actually does today. The contact email is a placeholder and should be replaced by the site owner.</p>
+  </div>
+</footer>
+
+</body>
+</html>
