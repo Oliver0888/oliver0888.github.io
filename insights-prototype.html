@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F4EE" />
+<title>DayFlow Insights — Premium preview (prototype)</title>
+<meta name="description" content="A standalone prototype of DayFlow Insights: weekly completion, goal momentum and dashboard personalisation. Demonstration data only." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232F4A34'/%3E%3Cpath d='M5 12a7 7 0 1 0 7-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M5 5v4h4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<style>
+  /* ===================== Design tokens ===================== */
+  :root{
+    --bg:#F7F4EE;
+    --surface:#FFFFFF;
+    --surface-2:#FCFAF6;
+    --ink:#2A2C28;
+    --muted:#6E6B62;
+    --line:#E7E2D8;
+
+    --accent:#2F4A34;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E4EDE3;
+    --accent-text:#2F4A34;
+
+    --bar-a:#2F4A34;
+    --bar-b:#7FA37A;
+
+    --peach:#C07A45; --peach-soft:#FBEDE1;
+    --sky:#4F84BD;   --sky-soft:#E7EFF9;
+    --lav:#7E6FC4;   --lav-soft:#EEEAF9;
+
+    --shadow:0 1px 2px rgba(42,44,40,.04), 0 14px 34px -20px rgba(42,44,40,.30);
+    --shadow-lg:0 24px 60px -26px rgba(42,44,40,.40);
+    --radius:20px;
+    --radius-sm:13px;
+  }
+  body[data-theme="sage"]{
+    --bg:#EDF3E9;
+    --surface:#FFFFFF;
+    --surface-2:#F6FAF3;
+    --line:#DCE6D6;
+    --accent:#33543A;
+    --accent-soft:#DDEAD8;
+    --accent-text:#33543A;
+    --bar-a:#33543A;
+    --bar-b:#7FA37A;
+  }
+  body[data-theme="dusk"]{
+    --bg:#18211B;
+    --surface:#212C24;
+    --surface-2:#26332A;
+    --line:#35463A;
+    --ink:#EDF2EA;
+    --muted:#A6B5A2;
+    --accent:#8FBF8A;
+    --accent-ink:#16211A;
+    --accent-soft:#2C3D30;
+    --accent-text:#A9D3A3;
+    --bar-a:#8FBF8A;
+    --bar-b:#C9A36E;
+    --peach:#D9A06A;
+    --sky:#8FB5DE;
+    --lav:#B0A6E3;
+    --peach-soft:#3A2F22;
+    --sky-soft:#22303D;
+    --lav-soft:#2B2740;
+    --shadow:0 1px 2px rgba(0,0,0,.28), 0 16px 36px -22px rgba(0,0,0,.65);
+    --shadow-lg:0 26px 60px -26px rgba(0,0,0,.75);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+    transition:background .25s ease,color .25s ease;
+  }
+  h1,h2,h3,h4{margin:0;font-weight:680;letter-spacing:-.02em;line-height:1.2}
+  p{margin:0 0 1em}
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  /* ===================== Header ===================== */
+  header.top{
+    position:sticky;top:0;z-index:40;
+    background:var(--bg);
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .top-inner{display:flex;align-items:center;gap:12px;padding:13px 0}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{
+    width:38px;height:38px;flex:0 0 38px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--bar-b) 65%,var(--sky));
+    display:grid;place-items:center;box-shadow:var(--shadow);
+  }
+  .logo svg{width:20px;height:20px}
+  .brand-name{font-size:17px;font-weight:750;letter-spacing:-.02em;line-height:1.1}
+  .brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+  .badge{
+    margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--accent-soft);color:var(--accent-text);
+    padding:6px 11px;border-radius:999px;white-space:nowrap;
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-text)}
+
+  /* ===================== Hero ===================== */
+  .hero{padding:40px 0 8px}
+  .eyebrow{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--accent-text);background:var(--accent-soft);padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .hero h1{font-size:clamp(28px,4.4vw,42px);max-width:18em}
+  .hero .lede{font-size:16.5px;color:var(--muted);max-width:44em;margin-top:12px}
+  .demo-banner{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--peach);
+    border-radius:var(--radius-sm);padding:14px 16px;margin:18px 0 6px;box-shadow:var(--shadow);
+  }
+  .demo-banner .ico{color:var(--peach);flex:0 0 18px;margin-top:1px}
+  .demo-banner b{font-size:13.5px}
+  .demo-banner span{font-size:13px;color:var(--muted)}
+
+  /* ===================== Cards & layout ===================== */
+  main{padding:16px 0 60px}
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;box-shadow:var(--shadow);margin-top:16px;
+    transition:background .25s ease,border-color .25s ease;
+  }
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .card-title{font-size:16px;font-weight:680;display:flex;align-items:center;gap:9px}
+  .tick{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:0 0 8px}
+  .tick.peach{background:var(--peach)} .tick.sky{background:var(--sky)} .tick.lav{background:var(--lav)}
+  .card-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .sample-pill{
+    font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--peach-soft);color:var(--peach);padding:4px 9px;border-radius:999px;white-space:nowrap;
+  }
+
+  /* ===================== KPI tiles ===================== */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .kpi{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px}
+  .kpi .k-label{font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .kpi .k-value{font-size:27px;font-weight:750;letter-spacing:-.03em;margin-top:4px;line-height:1.1}
+  .kpi .k-value small{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .kpi .k-foot{font-size:12px;color:var(--muted);margin-top:3px}
+  .kpi .bar{height:7px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:10px}
+  .kpi .bar > i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .45s ease}
+  .kpi .bar.b2 > i{background:var(--bar-b)}
+
+  /* ===================== Chart ===================== */
+  .chart-wrap{margin-top:4px}
+  .chart{display:flex;align-items:flex-end;gap:8px;height:168px;padding-top:8px}
+  .chart-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
+  .bars{display:flex;align-items:flex-end;justify-content:center;gap:4px;width:100%;height:100%}
+  .bar-col{
+    width:38%;max-width:20px;min-width:7px;border-radius:7px 7px 3px 3px;
+    background:var(--bar-a);transition:height .45s ease;position:relative;
+  }
+  .bar-col.b{background:var(--bar-b)}
+  .bar-col.empty{background:var(--line)}
+  .chart-day{font-size:10.5px;font-weight:650;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+  .chart-col.is-future .chart-day{opacity:.55}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .legend .a{background:var(--bar-a)} .legend .b{background:var(--bar-b)}
+
+  .formula{
+    margin-top:16px;background:var(--surface-2);border:1px dashed var(--line);
+    border-radius:var(--radius-sm);padding:13px 15px;font-size:13px;color:var(--muted);
+  }
+  .formula b{color:var(--ink);font-weight:650}
+  .formula code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+    background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--ink);
+  }
+
+  /* ===================== Week nav ===================== */
+  .week-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .icon-btn{
+    width:34px;height:34px;display:inline-grid;place-items:center;border-radius:10px;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  }
+  .icon-btn:hover:not(:disabled){background:var(--surface-2)}
+  .icon-btn:disabled{opacity:.35;cursor:not-allowed}
+  .icon-btn svg{width:16px;height:16px}
+  .week-label{font-size:13.5px;font-weight:650;min-width:132px;text-align:center}
+  .ghost-btn{
+    border:1px solid var(--line);background:var(--surface);border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink);
+  }
+  .ghost-btn:hover{background:var(--surface-2)}
+
+  /* ===================== Goals ===================== */
+  .goal-summary{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:16px;margin-bottom:14px;
+  }
+  .goal-summary .gs-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .goal-summary .gs-value{font-size:24px;font-weight:750;letter-spacing:-.02em}
+  .goal-summary .gs-label{font-size:13px;color:var(--muted)}
+  .bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .4s ease}
+  .bar.b2 > i{background:var(--bar-b)}
+  .goal-summary .bar{margin-top:10px}
+
+  .goal{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-top:12px}
+  .goal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .goal-title{font-size:15px;font-weight:650}
+  .goal-note{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .goal-pct{font-size:15px;font-weight:750;color:var(--accent-text);white-space:nowrap}
+  .goal .bar{margin:11px 0 9px}
+  .goal-meta{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+  .steps{list-style:none;margin:0;padding:0}
+  .step{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .step:last-child{border-bottom:0}
+  .step button{
+    display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;
+    padding:0;text-align:left;color:inherit;
+  }
+  .check{
+    width:21px;height:21px;flex:0 0 21px;border-radius:7px;border:1.7px solid var(--line);
+    background:var(--surface);display:grid;place-items:center;transition:all .15s;
+  }
+  .check svg{width:12px;height:12px;opacity:0;color:var(--accent-ink)}
+  .step.done .check{background:var(--accent);border-color:var(--accent)}
+  .step.done .check svg{opacity:1}
+  .step .txt{font-size:13.5px}
+  .step.done .txt{text-decoration:line-through;color:var(--muted)}
+  .goal-hint{font-size:12px;color:var(--muted);margin:12px 0 0}
+
+  /* ===================== Highlights ===================== */
+  .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .hl{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px}
+  .hl .hl-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .hl .hl-value{font-size:19px;font-weight:750;margin-top:5px;letter-spacing:-.02em}
+  .hl .hl-note{font-size:12px;color:var(--muted);margin-top:3px}
+  .delta-up{color:var(--accent-text)} .delta-down{color:var(--peach)}
+
+  /* ===================== Controls ===================== */
+  .controls .ctrl-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}
+  .ctrl-block h2{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .switch-row{
+    display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);
+    font-size:13.5px;cursor:pointer;
+  }
+  .switch-row:last-child{border-bottom:0}
+  .switch-row input{width:18px;height:18px;accent-color:var(--accent);flex:0 0 18px;cursor:pointer}
+  .switch-row .sw-text{flex:1}
+  .switch-row .sw-desc{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap}
+  .swatch{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12.5px;cursor:pointer;background:var(--surface)}
+  .swatch input{accent-color:var(--accent);margin:0}
+  .swatch.selected{border-color:var(--accent);background:var(--accent-soft)}
+  .swatch .dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.12)}
+  .dot.cream{background:#F7F4EE} .dot.sage{background:#DDEAD8} .dot.dusk{background:#1E2A22}
+  .controls-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .controls-foot .note{font-size:12px;color:var(--muted);max-width:36em}
+  .danger-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600}
+  .danger-btn:hover{background:var(--surface-2)}
+
+  /* ===================== Empty state ===================== */
+  .all-hidden{text-align:center;padding:44px 20px;color:var(--muted)}
+  .all-hidden .ico{width:48px;height:48px;margin:0 auto 12px;border-radius:14px;background:var(--surface-2);display:grid;place-items:center}
+  .all-hidden b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+
+  /* ===================== Footer ===================== */
+  footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--muted);font-size:12.5px}
+  footer .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer b{color:var(--ink)}
+
+  /* ===================== Responsive ===================== */
+  @media (max-width:820px){
+    .hero{padding:28px 0 6px}
+    .kpis{grid-template-columns:1fr}
+    .highlights{grid-template-columns:1fr}
+    .controls .ctrl-grid{grid-template-columns:1fr}
+    .card{padding:18px}
+    .chart{height:150px;gap:5px}
+  }
+  @media (max-width:480px){
+    .brand-sub{display:none}
+    .kpi .k-value{font-size:24px}
+    .week-label{min-width:110px;font-size:12.5px}
+    .chart-day{font-size:9.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important;scroll-behavior:auto}
+  }
+</style>
+</head>
+<body data-theme="cream">
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 8-8"/><path d="M4 4v5h5"/><path d="M12 8v4l3 2"/></svg>
+      </span>
+      <span>
+        <span class="brand-name">DayFlow Insights</span>
+        <span class="brand-sub">A premium preview for DayFlow</span>
+      </span>
+    </div>
+    <span class="badge"><span class="dot" aria-hidden="true"></span>Prototype</span>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <span class="eyebrow">Premium feature preview</span>
+  <h1>See how your days add up.</h1>
+  <p class="lede">A standalone look at DayFlow Insights — the dashboard that turns your tasks, routines and goals into a clear weekly picture, and shows the momentum you're building over time.</p>
+  <div class="demo-banner" role="note">
+    <span class="ico" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+    </span>
+    <span><b>Demonstration data only.</b> This prototype is separate from your DayFlow app. Every number below is realistic sample data, not your activity. Premium is not enabled, no account is required and no payment can be taken.</span>
+  </div>
+</div>
+
+<main class="wrap" id="main">
+
+  <!-- Personalisation -->
+  <section class="card controls" id="controls" aria-labelledby="controls-title">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title" id="controls-title"><span class="tick lav" aria-hidden="true"></span>Make it yours</h2>
+        <div class="card-sub">Choose what you want to see, and pick a theme. Changes save to this prototype only.</div>
+      </div>
+    </div>
+    <div class="ctrl-grid">
+      <div class="ctrl-block">
+        <h2 id="cards-label">Dashboard cards</h2>
+        <div role="group" aria-labelledby="cards-label">
+          <label class="switch-row">
+            <input type="checkbox" data-card="weekly" aria-describedby="d-weekly" />
+            <span class="sw-text">Weekly insights<span class="sw-desc" id="d-weekly">Totals, completion percentage and a daily chart.</span></span>
+          </label>
+          <label class="switch-row">
+            <input type="checkbox" data-card="goals" aria-describedby="d-goals" />
+            <span class="sw-text">Goal momentum<span class="sw-desc" id="d-goals">Example goals, steps complete and steps remaining.</span></span>
+          </label>
+          <label class="switch-row">
+            <input type="checkbox" data-card="highlights" aria-describedby="d-hl" />
+            <span class="sw-text">Week highlights<span class="sw-desc" id="d-hl">Best day, strongest area and week-on-week change.</span></span>
+          </label>
+        </div>
+      </div>
+      <div class="ctrl-block">
+        <h2 id="theme-label">Colour theme</h2>
+        <div class="swatches" role="radiogroup" aria-labelledby="theme-label">
+          <label class="swatch"><input type="radio" name="theme" value="cream" /> <span class="dot cream" aria-hidden="true"></span>Cream</label>
+          <label class="swatch"><input type="radio" name="theme" value="sage" /> <span class="dot sage" aria-hidden="true"></span>Sage</label>
+          <label class="swatch"><input type="radio" name="theme" value="dusk" /> <span class="dot dusk" aria-hidden="true"></span>Dusk</label>
+        </div>
+        <p class="note" style="font-size:12px;color:var(--muted);margin-top:12px">Themes and card visibility are remembered only in this prototype's own storage.</p>
+      </div>
+    </div>
+    <div class="controls-foot">
+      <span class="note">Prototype settings are saved separately from the main DayFlow app and never read or write its data.</span>
+      <button type="button" class="danger-btn" id="reset">Reset prototype</button>
+    </div>
+  </section>
+
+  <div id="cards">
+    <section class="card" id="card-weekly" aria-labelledby="weekly-title"></section>
+    <section class="card" id="card-goals" aria-labelledby="goals-title"></section>
+    <section class="card" id="card-highlights" aria-labelledby="hl-title"></section>
+  </div>
+
+  <section class="card all-hidden" id="all-hidden" hidden>
+    <div class="ico" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+    </div>
+    <b>All cards are hidden</b>
+    <div>Turn one back on in “Make it yours” above.</div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="foot">
+    <span><b>DayFlow Insights</b> — standalone prototype · demonstration data only</span>
+    <span>No accounts · no tracking · no payments enabled</span>
+  </div>
+</footer>
+
+<noscript>
+  <div class="wrap" style="padding:20px 0 60px">
+    <div class="card">This prototype needs JavaScript to show the charts and controls.</div>
+  </div>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+     Standalone prototype. Uses its own storage key and never touches the
+     main DayFlow app's data (which lives under "dayflow.v1").
+     ===================================================================== */
+  var KEY = "dayflow.insights.prototype.v1";
+  var THEMES = ["cream","sage","dusk"];
+  var CARD_KEYS = ["weekly","goals","highlights"];
+  var WEEKS_BACK = 5; // current week + 5 previous weeks
+
+  /* ---------- Storage (isolated + safe) ---------- */
+  var storageOK = true;
+  var memory = null;
+  try {
+    localStorage.setItem("__dfi_probe__","1");
+    localStorage.removeItem("__dfi_probe__");
+  } catch(e){ storageOK = false; }
+
+  function readSaved(){
+    if(!storageOK) return memory;
+    try{
+      var raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function writeSaved(){
+    if(!storageOK){ memory = state; return; }
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+  }
+
+  /* ---------- Dates (local) ---------- */
+  function pad(n){ return n < 10 ? "0"+n : ""+n; }
+  function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  var TODAY = ymd(new Date());
+  function parseYmd(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function addDays(s,n){ var d = parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); }
+  function dowIdx(s){ return (parseYmd(s).getDay()+6)%7; }
+  function startOfWeek(s){ return addDays(s, -dowIdx(s)); }
+  var DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  var DOW_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtShort(s){ var d = parseYmd(s); return d.getDate()+" "+MON[d.getMonth()]; }
+  function fmtRange(a,b){
+    var da = parseYmd(a), db = parseYmd(b);
+    if(da.getMonth() === db.getMonth()) return da.getDate()+"–"+db.getDate()+" "+MON[da.getMonth()];
+    return da.getDate()+" "+MON[da.getMonth()]+" – "+db.getDate()+" "+MON[db.getMonth()];
+  }
+  function pct(a,b){ return b <= 0 ? 0 : Math.round(a/b*100); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  /* ---------- Deterministic demonstration data ---------- */
+  // FNV-1a hash so the demo numbers are stable and realistic, not random on
+  // every render. Future days in the current week have no data yet.
+  function seeded(str, salt){
+    var s = str + "|" + salt, h = 2166136261;
+    for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h,16777619); }
+    return ((h >>> 0) % 1000) / 1000;
+  }
+  function dayData(date){
+    if(date > TODAY){
+      return { future:true, planned:0, completed:0, routineTotal:0, routineDone:0 };
+    }
+    var planned = 6 + Math.floor(seeded(date,"p") * 7);                 // 6–12 tasks planned
+    var completed = Math.min(planned, Math.round(planned * (0.5 + seeded(date,"c") * 0.45)));
+    var routineTotal = 4 + Math.floor(seeded(date,"rt") * 5);           // 4–8 routine steps due
+    var routineDone = Math.min(routineTotal, Math.round(routineTotal * (0.45 + seeded(date,"rd") * 0.5)));
+    return { future:false, planned:planned, completed:completed, routineTotal:routineTotal, routineDone:routineDone };
+  }
+  function weekAt(index){
+    var start = addDays(startOfWeek(TODAY), -7*index);
+    var days = [];
+    for(var i=0;i<7;i++){
+      var date = addDays(start,i);
+      days.push({ date:date, dow:DOW[i], dowLong:DOW_LONG[i], data:dayData(date) });
+    }
+    return { index:index, start:start, end:addDays(start,6), days:days };
+  }
+  function totalsFor(week){
+    var t = { planned:0, completed:0, routineTotal:0, routineDone:0 };
+    week.days.forEach(function(d){
+      t.planned += d.data.planned;
+      t.completed += d.data.completed;
+      t.routineTotal += d.data.routineTotal;
+      t.routineDone += d.data.routineDone;
+    });
+    t.taskPct = pct(t.completed, t.planned);
+    t.routinePct = pct(t.routineDone, t.routineTotal);
+    t.overallPct = pct(t.completed + t.routineDone, t.planned + t.routineTotal);
+    t.totalDone = t.completed + t.routineDone;
+    t.totalDue = t.planned + t.routineTotal;
+    return t;
+  }
+
+  /* ---------- Demonstration goals ---------- */
+  var GOALS = [
+    { id:"g1", title:"Read 12 books this year", note:"One book a month, any genre.", accent:"sage",
+      steps:["Choose the first three books","Finish book one","Finish book two","Write a short note on each","Pick book three"] },
+    { id:"g2", title:"Learn five new recipes", note:"Cook one new dish each fortnight.", accent:"peach",
+      steps:["Pick five recipes","Cook recipe one","Cook recipe two","Cook recipe three","Cook recipe four"] },
+    { id:"g3", title:"Run a 10k", note:"Build up gently, three runs a week.", accent:"sky",
+      steps:["Run 3k without stopping","Run 5k","Run 7k","Run 8k","Run 10k","Recover and celebrate"] }
+  ];
+  var GOAL_DEFAULTS = {
+    g1:[true,true,true,false,false],
+    g2:[true,true,false,false,false],
+    g3:[true,true,true,true,false,false]
+  };
+
+  /* ---------- Prototype state ---------- */
+  function defaults(){
+    return {
+      theme:"cream",
+      visible:{ weekly:true, goals:true, highlights:true },
+      steps:{}
+    };
+  }
+  function sanitise(saved){
+    var d = defaults();
+    if(!saved || typeof saved !== "object") return d;
+    if(THEMES.indexOf(saved.theme) !== -1) d.theme = saved.theme;
+    if(saved.visible && typeof saved.visible === "object"){
+      CARD_KEYS.forEach(function(k){
+        if(typeof saved.visible[k] === "boolean") d.visible[k] = saved.visible[k];
+      });
+    }
+    if(saved.steps && typeof saved.steps === "object"){
+      GOALS.forEach(function(g){
+        var arr = saved.steps[g.id];
+        if(Array.isArray(arr) && arr.length === g.steps.length){
+          d.steps[g.id] = arr.map(function(v){ return !!v; });
+        }
+      });
+    }
+    return d;
+  }
+  var state = sanitise(readSaved());
+  var ui = { weekIndex: 0 }; // current week by default (not persisted)
+
+  function goalDone(id){
+    var arr = state.steps[id];
+    if(Array.isArray(arr) && arr.length === GOAL_DEFAULTS[id].length) return arr.slice();
+    return GOAL_DEFAULTS[id].slice();
+  }
+  function goalProgress(g){
+    var done = goalDone(g.id);
+    return { done:done, count:done.filter(Boolean).length, total:g.steps.length };
+  }
+
+  /* ---------- Rendering: weekly insights ---------- */
+  function renderWeekly(){
+    var week = weekAt(ui.weekIndex);
+    var t = totalsFor(week);
+    var prev = ui.weekIndex < WEEKS_BACK ? totalsFor(weekAt(ui.weekIndex+1)) : null;
+
+    var h = '<div class="card-head">' +
+      '<div><h2 class="card-title" id="weekly-title"><span class="tick" aria-hidden="true"></span>Weekly insights</h2>' +
+      '<div class="card-sub">' + (ui.weekIndex === 0 ? "This week" : "Week of " + fmtRange(week.start, week.end)) + '</div></div>' +
+      '<div class="week-nav">' +
+        '<button class="icon-btn" id="prev-week" aria-label="Previous week"' + (ui.weekIndex >= WEEKS_BACK ? " disabled" : "") + '>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>' +
+        '<span class="week-label" id="week-label">' + (ui.weekIndex === 0 ? "This week" : fmtRange(week.start, week.end)) + '</span>' +
+        '<button class="icon-btn" id="next-week" aria-label="Next week"' + (ui.weekIndex === 0 ? " disabled" : "") + '>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>' +
+      '</div>' +
+    '</div>';
+
+    h += '<div class="kpis">' +
+      '<div class="kpi"><div class="k-label">Overall completion</div>' +
+        '<div class="k-value" id="kpi-overall">' + t.overallPct + '<small>%</small></div>' +
+        '<div class="k-foot">' + t.totalDone + ' of ' + t.totalDue + ' planned actions</div>' +
+        '<div class="bar"><i style="width:' + t.overallPct + '%"></i></div></div>' +
+      '<div class="kpi"><div class="k-label">Tasks completed</div>' +
+        '<div class="k-value" id="kpi-tasks">' + t.completed + '<small>/' + t.planned + '</small></div>' +
+        '<div class="k-foot">' + t.taskPct + '% of planned tasks</div>' +
+        '<div class="bar b2"><i style="width:' + t.taskPct + '%"></i></div></div>' +
+      '<div class="kpi"><div class="k-label">Routine steps</div>' +
+        '<div class="k-value" id="kpi-routines">' + t.routineDone + '<small>/' + t.routineTotal + '</small></div>' +
+        '<div class="k-foot">' + t.routinePct + '% ticked off</div>' +
+        '<div class="bar b2"><i style="width:' + t.routinePct + '%"></i></div></div>' +
+    '</div>';
+
+    // Chart
+    var max = 1;
+    week.days.forEach(function(d){ max = Math.max(max, d.data.completed, d.data.routineDone); });
+    h += '<div class="chart-wrap"><div class="chart" role="img" aria-label="Completed tasks and routine steps for each day of the selected week">';
+    week.days.forEach(function(d){
+      var future = d.data.future;
+      var ah = future ? 0 : Math.round(d.data.completed / max * 100);
+      var bh = future ? 0 : Math.round(d.data.routineDone / max * 100);
+      h += '<div class="chart-col' + (future ? " is-future" : "") + '">' +
+        '<div class="bars">' +
+          '<div class="bar-col' + (future ? " empty" : "") + '" style="height:' + (future ? 3 : Math.max(ah,2)) + '%" ' +
+            'title="' + d.dowLong + ': ' + (future ? "not yet" : d.data.completed + " tasks completed") + '"></div>' +
+          '<div class="bar-col b' + (future ? " empty" : "") + '" style="height:' + (future ? 3 : Math.max(bh,2)) + '%" ' +
+            'title="' + d.dowLong + ': ' + (future ? "not yet" : d.data.routineDone + " routine steps ticked") + '"></div>' +
+        '</div>' +
+        '<div class="chart-day">' + d.dow + '</div>' +
+      '</div>';
+    });
+    h += '</div>';
+    h += '<div class="legend"><span><i class="a" aria-hidden="true"></i>Tasks completed</span>' +
+      '<span><i class="b" aria-hidden="true"></i>Routine steps ticked</span>' +
+      '<span style="opacity:.7">Future days appear empty</span></div></div>';
+
+    // Transparent calculation
+    h += '<div class="formula" id="formula">' +
+      '<b>How this is calculated.</b> Completion is the total you finished divided by the total that was planned, across every day shown: ' +
+      '<code>(' + t.completed + ' tasks + ' + t.routineDone + ' routine steps) ÷ (' + t.planned + ' tasks + ' + t.routineTotal + ' routine steps) = ' + t.overallPct + '%</code>. ' +
+      'Days with nothing planned are excluded, and future days in the current week are not counted until they arrive.' +
+      (prev ? ' Last week was ' + prev.overallPct + '%.' : '') +
+    '</div>';
+
+    document.getElementById("card-weekly").innerHTML = h;
+    var prevBtn = document.getElementById("prev-week");
+    var nextBtn = document.getElementById("next-week");
+    if(prevBtn) prevBtn.addEventListener("click", function(){ if(ui.weekIndex < WEEKS_BACK){ ui.weekIndex++; renderWeekly(); renderHighlights(); } });
+    if(nextBtn) nextBtn.addEventListener("click", function(){ if(ui.weekIndex > 0){ ui.weekIndex--; renderWeekly(); renderHighlights(); } });
+  }
+
+  /* ---------- Rendering: goal momentum ---------- */
+  function renderGoals(){
+    var totalSteps = 0, doneSteps = 0;
+    GOALS.forEach(function(g){ var p = goalProgress(g); totalSteps += p.total; doneSteps += p.count; });
+    var overall = pct(doneSteps, totalSteps);
+
+    var h = '<div class="card-head">' +
+      '<div><h2 class="card-title" id="goals-title"><span class="tick peach" aria-hidden="true"></span>Goal momentum</h2>' +
+      '<div class="card-sub">Example goals showing how steps translate into progress.</div></div>' +
+      '<span class="sample-pill">Demonstration goals</span>' +
+    '</div>';
+
+    h += '<div class="goal-summary">' +
+      '<div class="gs-top"><span class="gs-value" id="goal-summary-value">' + doneSteps + ' of ' + totalSteps + ' steps complete</span>' +
+        '<span class="gs-label">' + overall + '% across ' + GOALS.length + ' goals</span></div>' +
+      '<div class="bar"><i style="width:' + overall + '%"></i></div>' +
+      '<div class="gs-label" style="margin-top:8px" id="goal-summary">' + (totalSteps - doneSteps) + ' steps remaining. Toggling a step below updates this prototype instantly.</div>' +
+    '</div>';
+
+    GOALS.forEach(function(g){
+      var p = goalProgress(g);
+      var pctVal = pct(p.count, p.total);
+      h += '<div class="goal"><div class="goal-head">' +
+        '<div><div class="goal-title">' + esc(g.title) + '</div>' +
+        '<div class="goal-note">' + esc(g.note) + '</div></div>' +
+        '<div class="goal-pct">' + pctVal + '%</div></div>' +
+        '<div class="bar"><i style="width:' + pctVal + '%"></i></div>' +
+        '<div class="goal-meta"><span>' + p.count + ' of ' + p.total + ' steps complete</span>' +
+          '<span>' + (p.total - p.count) + ' remaining</span></div>' +
+        '<ul class="steps">';
+      g.steps.forEach(function(step, i){
+        var done = p.done[i];
+        h += '<li class="step' + (done ? " done" : "") + '">' +
+          '<button type="button" data-goal="' + g.id + '" data-step="' + i + '" aria-pressed="' + (done ? "true" : "false") + '" ' +
+            'aria-label="' + (done ? "Mark not done: " : "Mark done: ") + esc(step) + '">' +
+            '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg></span>' +
+            '<span class="txt">' + esc(step) + '</span>' +
+          '</button></li>';
+      });
+      h += '</ul></div>';
+    });
+    h += '<p class="goal-hint">These goals are fictional examples included with the prototype. They are not saved to your DayFlow app.</p>';
+
+    document.getElementById("card-goals").innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll("#card-goals [data-goal]"), function(btn){
+      btn.addEventListener("click", function(){
+        var gid = btn.getAttribute("data-goal");
+        var idx = parseInt(btn.getAttribute("data-step"), 10);
+        var arr = goalDone(gid);
+        arr[idx] = !arr[idx];
+        state.steps[gid] = arr;
+        writeSaved();
+        renderGoals();
+      });
+    });
+  }
+
+  /* ---------- Rendering: highlights ---------- */
+  function renderHighlights(){
+    var week = weekAt(ui.weekIndex);
+    var t = totalsFor(week);
+    var prev = ui.weekIndex < WEEKS_BACK ? totalsFor(weekAt(ui.weekIndex+1)) : null;
+
+    var best = null;
+    week.days.forEach(function(d){
+      if(d.data.future) return;
+      var due = d.data.planned + d.data.routineTotal;
+      if(due <= 0) return;
+      var p = pct(d.data.completed + d.data.routineDone, due);
+      if(!best || p > best.pct) best = { dow:d.dowLong, pct:p };
+    });
+
+    var strongest;
+    if(t.taskPct === t.routinePct) strongest = { label:"Evenly matched", note:"Tasks and routines are at " + t.taskPct + "%." };
+    else if(t.taskPct > t.routinePct) strongest = { label:"Tasks", note:"Tasks lead at " + t.taskPct + "% vs " + t.routinePct + "% for routines." };
+    else strongest = { label:"Routines", note:"Routines lead at " + t.routinePct + "% vs " + t.taskPct + "% for tasks." };
+
+    var deltaHtml, deltaClass;
+    if(!prev){ deltaHtml = "—"; deltaClass = ""; }
+    else {
+      var d = t.overallPct - prev.overallPct;
+      if(d > 0){ deltaHtml = "+" + d + " pts"; deltaClass = "delta-up"; }
+      else if(d < 0){ deltaHtml = d + " pts"; deltaClass = "delta-down"; }
+      else { deltaHtml = "No change"; deltaClass = ""; }
+    }
+
+    var h = '<div class="card-head">' +
+      '<div><h2 class="card-title" id="hl-title"><span class="tick sky" aria-hidden="true"></span>Week highlights</h2>' +
+      '<div class="card-sub">A few quick reads on the selected week.</div></div>' +
+      '<span class="sample-pill">Demonstration data</span>' +
+    '</div>';
+
+    h += '<div class="highlights">' +
+      '<div class="hl"><div class="hl-label">Best day</div>' +
+        '<div class="hl-value">' + (best ? esc(best.dow) : "—") + '</div>' +
+        '<div class="hl-note">' + (best ? best.pct + "% completed that day" : "No completed days yet") + '</div></div>' +
+      '<div class="hl"><div class="hl-label">Strongest area</div>' +
+        '<div class="hl-value">' + esc(strongest.label) + '</div>' +
+        '<div class="hl-note">' + esc(strongest.note) + '</div></div>' +
+      '<div class="hl"><div class="hl-label">vs previous week</div>' +
+        '<div class="hl-value ' + deltaClass + '">' + deltaHtml + '</div>' +
+        '<div class="hl-note">' + (prev ? "Last week: " + prev.overallPct + "%" : "No earlier week to compare") + '</div></div>' +
+    '</div>';
+
+    document.getElementById("card-highlights").innerHTML = h;
+  }
+
+  /* ---------- Rendering: visibility ---------- */
+  function applyVisibility(){
+    CARD_KEYS.forEach(function(k){
+      var el = document.getElementById("card-" + k);
+      if(el) el.hidden = !state.visible[k];
+    });
+    var any = CARD_KEYS.some(function(k){ return state.visible[k]; });
+    document.getElementById("all-hidden").hidden = any;
+    document.getElementById("cards").hidden = !any;
+  }
+
+  /* ---------- Theme ---------- */
+  function applyTheme(){
+    document.body.setAttribute("data-theme", state.theme);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute("content", state.theme === "dusk" ? "#18211B" : (state.theme === "sage" ? "#EDF3E9" : "#F7F4EE"));
+  }
+
+  /* ---------- Controls ---------- */
+  function renderControls(){
+    Array.prototype.forEach.call(document.querySelectorAll("input[data-card]"), function(cb){
+      var k = cb.getAttribute("data-card");
+      cb.checked = !!state.visible[k];
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="theme"]'), function(r){
+      r.checked = r.value === state.theme;
+      r.closest(".swatch").classList.toggle("selected", r.value === state.theme);
+    });
+  }
+
+  function wireControls(){
+    Array.prototype.forEach.call(document.querySelectorAll("input[data-card]"), function(cb){
+      cb.addEventListener("change", function(){
+        var k = cb.getAttribute("data-card");
+        state.visible[k] = cb.checked;
+        writeSaved();
+        applyVisibility();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="theme"]'), function(r){
+      r.addEventListener("change", function(){
+        if(!r.checked) return;
+        state.theme = r.value;
+        writeSaved();
+        applyTheme();
+        renderControls();
+      });
+    });
+    document.getElementById("reset").addEventListener("click", function(){
+      state = defaults();
+      ui.weekIndex = 0;
+      if(storageOK){ try{ localStorage.removeItem(KEY); }catch(e){} }
+      else { memory = null; }
+      applyTheme();
+      renderControls();
+      renderWeekly();
+      renderGoals();
+      renderHighlights();
+      applyVisibility();
+    });
+  }
+
+  /* ---------- Boot ---------- */
+  function boot(){
+    applyTheme();
+    renderControls();
+    wireControls();
+    renderWeekly();
+    renderGoals();
+    renderHighlights();
+    applyVisibility();
+  }
+  boot();
+
+  // Expose a tiny read-only surface for automated checks (no data collection).
+  window.DFI = {
+    key: KEY,
+    state: function(){ return JSON.parse(JSON.stringify(state)); },
+    weekIndex: function(){ return ui.weekIndex; },
+    goWeek: function(n){ if(n >= 0 && n <= WEEKS_BACK){ ui.weekIndex = n; renderWeekly(); renderHighlights(); } },
+    totals: function(i){ return totalsFor(weekAt(i == null ? ui.weekIndex : i)); }
+  };
+})();
+</script>
+</body>
+</html>
