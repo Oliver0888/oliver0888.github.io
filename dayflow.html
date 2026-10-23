@@ -163,6 +163,27 @@
   .ring .val{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:19px}
   .ring .lbl{position:absolute;inset:0;display:grid;place-items:center;padding-top:26px;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 
+  /* ---------- Daily Focus ---------- */
+  .focus-card{
+    margin-top:16px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#FFFFFF 0%,#FBF7F0 55%,#F3F8F2 100%);
+  }
+  .focus-card:after{
+    content:"";position:absolute;right:-50px;top:-70px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,var(--peach-soft),transparent 70%);pointer-events:none;
+  }
+  .focus-kicker{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .focus-title{font-size:19px;font-weight:650;letter-spacing:-.01em;line-height:1.35;word-break:break-word}
+  .focus-note{font-size:13.5px;color:var(--muted);margin-top:4px;word-break:break-word}
+  .focus-body{display:flex;align-items:flex-start;gap:13px;position:relative;z-index:1}
+  .focus-body.done .focus-title{text-decoration:line-through;color:var(--muted)}
+  .focus-copy{flex:1;min-width:0}
+  .focus-prompt{font-size:15px;color:#4F4C45;margin:0 0 13px}
+  .focus-empty{position:relative;z-index:1;padding-top:1px}
+  .check-lg{width:30px;height:30px;flex:0 0 30px;border-radius:10px}
+  .check-lg svg{width:16px;height:16px}
+  @media (max-width:900px){ .focus-title{font-size:17.5px} }
+
   /* ---------- Task rows ---------- */
   .task{
     display:flex;align-items:flex-start;gap:13px;padding:13px 4px;
@@ -462,7 +483,7 @@
 
   /* ---------- Config (edit these before publishing) ---------- */
   var APP_VERSION   = "1.1.0";
-  var SCHEMA_VERSION = 2;
+  var SCHEMA_VERSION = 3;
   // Replace with a real contact address before publishing. While it stays
   // as "example", the feedback form copies text instead of opening email.
   var CONTACT_EMAIL = "hello@example.com";
@@ -535,7 +556,7 @@
 
   /* ---------- State ---------- */
   function blankState(){
-    return { tasks:[], routines:[], routineLog:{}, goals:[], lists:[],
+    return { tasks:[], routines:[], routineLog:{}, goals:[], lists:[], focus:{},
              seeded:false, bannerDismissed:false, onboarded:false, v:SCHEMA_VERSION };
   }
   var state = blankState();
@@ -570,6 +591,34 @@
       items: (l.items||[]).map(function(i){ return { id:i.id||uid(), text:clampStr(i.text,200), done:!!i.done }; }),
       createdAt: l.createdAt || todayStr(), example: !!l.example };
   }
+  function normFocus(f){
+    f = f || {};
+    return { text: clampStr(f.text,200), note: clampStr(f.note,500),
+      done: !!f.done, completedAt: f.completedAt || null,
+      createdAt: f.createdAt || todayStr() };
+  }
+  function isValidYmd(s){
+    if(typeof s !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var p = s.split("-").map(Number);
+    var dt = new Date(p[0], p[1]-1, p[2]);
+    return dt.getFullYear() === p[0] && dt.getMonth() === p[1]-1 && dt.getDate() === p[2];
+  }
+  // Always sanitise the focus map, even for current-schema data, so a
+  // malformed or partially-written entry can never break the Today page.
+  function normalizeFocusMap(raw){
+    var out = {};
+    if(!raw || typeof raw !== "object") return out;
+    Object.keys(raw).forEach(function(k){
+      if(!isValidYmd(k)) return;
+      var v = raw[k];
+      if(!v || typeof v !== "object") return;
+      var text = clampStr(v.text,200).trim();
+      if(!text) return;
+      out[k] = { text: text, note: clampStr(v.note,500), done: !!v.done,
+        completedAt: v.completedAt || null, createdAt: v.createdAt || k };
+    });
+    return out;
+  }
   function migrate(d){
     var v = d.v || 1;
     if(v < SCHEMA_VERSION){
@@ -578,6 +627,7 @@
       d.goals = (d.goals||[]).map(normGoal);
       d.lists = (d.lists||[]).map(normList);
       if(!d.routineLog || typeof d.routineLog !== "object") d.routineLog = {};
+      d.focus = normalizeFocusMap(d.focus);
       d.v = SCHEMA_VERSION;
     }
     return d;
@@ -589,6 +639,7 @@
     state.routineLog = d.routineLog || {};
     state.goals = d.goals || [];
     state.lists = d.lists || [];
+    state.focus = normalizeFocusMap(d.focus);
     state.seeded = !!d.seeded;
     state.bannerDismissed = !!d.bannerDismissed;
     state.onboarded = !!d.onboarded;
@@ -949,6 +1000,82 @@
   }
 
   /* =====================================================================
+     DAILY FOCUS (one focus per local date)
+     ===================================================================== */
+  function getFocus(date){ return state.focus[date] || null; }
+
+  function focusFormBody(f){
+    f = f || {};
+    return '<label class="fld"><span>Your one main focus</span>' +
+        '<input type="text" name="text" maxlength="160" placeholder="e.g. Finish the history essay" value="' + esc(f.text||"") + '" required></label>' +
+      '<label class="fld"><span>Short description <span class="muted">(optional)</span></span>' +
+        '<textarea name="note" maxlength="300" placeholder="Why it matters, or how you\u2019ll start">' + esc(f.note||"") + '</textarea></label>' +
+      '<p class="small muted" style="margin:0">One focus per day. You can edit or clear it any time.</p>';
+  }
+  function setFocus(){
+    openModal("Set today\u2019s focus", focusFormBody(null), "Save focus", function(fm){
+      var text = fm.elements.text.value.trim();
+      if(!text){ fm.elements.text.focus(); toast("Please write your focus first", true); return; }
+      state.focus[todayStr()] = normFocus({ text: text, note: fm.elements.note.value.trim(), done: false });
+      closeModal(); persist("Today\u2019s focus saved");
+    });
+  }
+  function editFocus(){
+    var d = todayStr(), f = getFocus(d);
+    if(!f){ setFocus(); return; }
+    openModal("Edit today\u2019s focus", focusFormBody(f), "Save changes", function(fm){
+      var text = fm.elements.text.value.trim();
+      if(!text){ fm.elements.text.focus(); toast("Please write your focus first", true); return; }
+      f.text = text; f.note = fm.elements.note.value.trim();
+      closeModal(); persist("Focus updated");
+    });
+  }
+  function toggleFocusDone(){
+    var d = todayStr(), f = getFocus(d);
+    if(!f) return;
+    f.done = !f.done;
+    f.completedAt = f.done ? d : null;
+    persist(f.done ? "Focus complete \u2014 nice work" : null);
+  }
+  function clearFocus(){
+    var d = todayStr(), f = getFocus(d);
+    if(!f) return;
+    delete state.focus[d]; save(); render();
+    offerUndo("Daily focus cleared", function(){ state.focus[d] = f; save(); });
+  }
+  function renderFocusCard(date){
+    var f = getFocus(date);
+    var h = '<div class="card focus-card"><div class="card-head">' +
+      '<div class="card-title"><span class="tick" style="background:var(--peach)"></span>Daily focus</div>';
+    if(f){
+      h += '<div style="display:flex;gap:4px">' +
+        '<button class="btn-icon" aria-label="Edit daily focus" title="Edit focus" onclick="DF.editFocus()">' + icon("edit") + '</button>' +
+        '<button class="btn-icon" aria-label="Clear daily focus" title="Clear focus" onclick="DF.clearFocus()">' + icon("trash") + '</button>' +
+      '</div>';
+    }
+    h += '</div>';
+    if(!f){
+      h += '<div class="focus-empty">' +
+        '<div class="focus-kicker">One thing at a time</div>' +
+        '<p class="focus-prompt">What\u2019s the one thing that would make today feel like a win?</p>' +
+        '<button class="btn btn-primary btn-sm" onclick="DF.setFocus()">' + icon("plus") + 'Set today\u2019s focus</button>' +
+      '</div>';
+    } else {
+      h += '<div class="focus-body' + (f.done ? " done" : "") + '">' +
+        '<button class="check check-lg' + (f.done ? " on" : "") + '" aria-pressed="' + (f.done ? "true" : "false") + '" ' +
+          'aria-label="Mark daily focus ' + (f.done ? "not complete" : "complete") + '" onclick="DF.toggleFocusDone()">' + icon("check") + '</button>' +
+        '<div class="focus-copy">' +
+          '<div class="focus-kicker">' + (f.done ? "Focus complete" : "Today\u2019s focus") + '</div>' +
+          '<div class="focus-title">' + esc(f.text) + '</div>' +
+          (f.note ? '<div class="focus-note">' + esc(f.note) + '</div>' : '') +
+        '</div>' +
+        (f.done ? '<span class="pill low">Done</span>' : '') +
+      '</div>';
+    }
+    return h + '</div>';
+  }
+
+  /* =====================================================================
      TODAY
      ===================================================================== */
   function renderToday(){
@@ -991,6 +1118,8 @@
       '<div class="ring" role="img" aria-label="Today\u2019s progress: ' + progress + ' percent">' + ringSvg(progress) +
         '<div class="val">' + progress + '%</div><div class="lbl">done</div></div>' +
     '</div>';
+
+    h += renderFocusCard(t);
 
     h += '<div class="grid grid-2" style="margin-top:16px">';
 
@@ -1914,6 +2043,7 @@
     go: go, closeModal: closeModal, toast: toast,
     addTask: addTask, editTask: editTask, toggleTask: toggleTask, deleteTask: deleteTask, moveTask: moveTask,
     quickAddTask: quickAddTask, moveUnfinishedToTomorrow: moveUnfinishedToTomorrow,
+    setFocus: setFocus, editFocus: editFocus, toggleFocusDone: toggleFocusDone, clearFocus: clearFocus,
     clearExamples: clearExamples, dismissBanner: dismissBanner,
     setPlannerMode: setPlannerMode, selectDay: selectDay, gotoToday: gotoToday, shiftWeek: shiftWeek,
     addRoutine: addRoutine, editRoutine: editRoutine, deleteRoutine: deleteRoutine,
