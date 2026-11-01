@@ -684,7 +684,8 @@
     {id:"routines",label:"Routines", icon:"routines"},
     {id:"goals",   label:"Goals",    icon:"goals"},
     {id:"lists",   label:"My Lists", icon:"lists"},
-    {id:"progress",label:"Progress", icon:"progress"}
+ {id:"progress",label:"Progress", icon:"progress"},
+{id:"insights",label:"Insights", icon:"insights"}
   ];
 
   /* ---------- Seed example content ---------- */
@@ -1801,6 +1802,138 @@
         '<span class="small muted">' + esc(detail) + '</span></div>' +
       '<div class="bar ' + (tone||"") + '"><i style="width:' + percent + '%"></i></div></div>';
   }
+    /* =====================================================================
+     INSIGHTS
+     ===================================================================== */
+  function renderInsights(){
+    var t = todayStr();
+    var weekStart = startOfWeek(t);
+    var days = [];
+    for(var i=0;i<7;i++) days.push(addDays(weekStart,i));
+
+    var perDay = days.map(function(d){
+      return state.tasks.filter(function(x){
+        return x.completed && x.completedAt === d;
+      }).length;
+    });
+
+    var weekTasks = perDay.reduce(function(a,b){ return a+b; },0);
+    var maxDay = Math.max.apply(null,perDay.concat([1]));
+
+    var routineTotal = 0;
+    var routineDone = 0;
+
+    days.forEach(function(d){
+      state.routines.forEach(function(r){
+        if(r.days.indexOf(dowIdx(d)) === -1) return;
+        routineTotal += r.items.length;
+        routineDone += r.items.filter(function(it){
+          return isItemDone(d,r.id,it.id);
+        }).length;
+      });
+    });
+
+    var routineRate = pct(routineDone,routineTotal);
+    var goalAverage = goalProgressAvg();
+    var completedGoals = state.goals.filter(function(g){
+      return goalProgress(g) === 100;
+    }).length;
+
+    var h = '<div class="page-head">' +
+      '<div class="page-title">Insights</div>' +
+      '<div class="page-sub">Understand your progress and see how your daily actions add up.</div></div>';
+
+    h += '<div class="grid grid-3">' +
+      statCard(weekTasks,"tasks completed this week") +
+      statCard(routineRate + "%","routine consistency") +
+      statCard(goalAverage + "%","average goal progress") +
+      '</div>';
+
+    h += '<div class="card" style="margin-top:16px">' +
+      '<div class="card-head"><div class="card-title">Your task activity</div>' +
+      '<span class="small muted">This week</span></div>' +
+      '<div class="chart">';
+
+    days.forEach(function(d,i){
+      var v = perDay[i];
+      var height = Math.round(v/maxDay*100);
+      h += '<div class="col">' +
+        '<div class="stack" title="' + v + ' tasks">' +
+        '<i style="height:' + (v ? Math.max(height,8) : 0) + '%"></i></div>' +
+        '<div class="dl">' + DOW[i] + '</div></div>';
+    });
+
+    h += '</div>';
+
+    if(weekTasks === 0){
+      h += '<p class="small muted" style="text-align:center;margin-top:12px">Your completed tasks will appear here as you work through your week.</p>';
+    }
+
+    h += '</div>';
+
+    h += '<div class="card" style="margin-top:16px">' +
+      '<div class="card-head"><div class="card-title">Routine consistency</div></div>';
+
+    h += summaryRow(
+      "Routine steps completed",
+      routineDone + " of " + routineTotal,
+      routineRate,
+      "lav"
+    );
+
+    if(routineTotal === 0){
+      h += '<p class="small muted">Add routines and tick off their steps to build your consistency picture.</p>';
+    }
+
+    h += '</div>';
+
+    h += '<div class="card" style="margin-top:16px">' +
+      '<div class="card-head"><div class="card-title">Your goals</div>' +
+      '<span class="small muted">' + completedGoals + ' completed</span></div>';
+
+    if(state.goals.length === 0){
+      h += '<p class="small muted">Add a goal to start tracking your progress here.</p>';
+    } else {
+      state.goals.forEach(function(g){
+        var progress = goalProgress(g);
+        h += '<div style="margin-bottom:16px">' +
+          '<div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:6px">' +
+          '<b style="font-size:13.5px">' + esc(g.title) + '</b>' +
+          '<span class="small muted">' + progress + '%</span></div>' +
+          '<div class="bar sky"><i style="width:' + progress + '%"></i></div>' +
+          '</div>';
+      });
+    }
+
+    h += '</div>';
+
+    var observation;
+
+    if(weekTasks === 0 && routineDone === 0 && state.goals.length === 0){
+      observation = "Your Insights will grow as you add tasks, routines and goals.";
+    } else if(weekTasks > 0 && routineRate >= 70){
+      observation = "You've completed " + weekTasks +
+        " tasks this week and kept up strong routine consistency. Keep building at a steady pace.";
+    } else if(weekTasks > 0){
+      observation = "You've completed " + weekTasks +
+        " tasks this week. Every completed task is a step towards your bigger goals.";
+    } else if(routineDone > 0){
+      observation = "You've ticked off " + routineDone +
+        " routine steps this week. Small repeated actions can add up over time.";
+    } else {
+      observation = "Your current goals have an average progress of " +
+        goalAverage + "%. Keep taking manageable steps.";
+    }
+
+    h += '<div class="card" style="margin-top:16px;background:linear-gradient(120deg,var(--sage-soft),var(--sky-soft))">' +
+      '<div style="display:flex;gap:12px;align-items:flex-start">' +
+      '<div style="color:var(--forest)">' + icon("sparkle","22") + '</div>' +
+      '<div><b style="font-size:14px">Your insight</b>' +
+      '<p style="margin:4px 0 0;font-size:13.5px;color:#4A4741">' +
+      esc(observation) + '</p></div></div></div>';
+
+    return h;
+  }
 
   /* =====================================================================
      SETTINGS · BACKUP · FEEDBACK · SHARE · PRICING · PRIVACY
@@ -2036,7 +2169,8 @@
     else if(ui.tab === "goals") view.innerHTML = renderGoals();
     else if(ui.tab === "lists") view.innerHTML = renderLists();
     else if(ui.tab === "progress") view.innerHTML = renderProgress();
-  }
+else if(ui.tab === "insights") view.innerHTML = renderInsights();
+}
 
   /* ---------- Expose handlers ---------- */
   window.DF = {
