@@ -1230,7 +1230,7 @@
     for(var i=0;i<7;i++) days.push(addDays(weekStart,i));
 
     h += '<div class="week-strip">';
-    days.forEach(function(d){
+    days.filter(function(d){ return d <= t; }).forEach(function(d){
       var list = tasksFor(d);
       var done = list.filter(function(x){ return x.completed; }).length;
       var cls = "day-cell";
