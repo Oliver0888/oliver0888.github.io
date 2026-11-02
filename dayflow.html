@@ -1824,7 +1824,7 @@ v<!DOCTYPE html>
     var routineTotal = 0;
     var routineDone = 0;
 
-   days.filter(function(d){ return d <= t; }).forEach(function(d){ 
+days.forEach(function(d){
       state.routines.forEach(function(r){
         if(r.days.indexOf(dowIdx(d)) === -1) return;
         routineTotal += r.items.length;
