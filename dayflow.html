@@ -10,7 +10,56 @@
   /* ============================================================
      DayFlow design system — tokens
      ============================================================ */
-  :root{
+  :root{ 
+    /* Insights personalisation themes */
+.insights-shell[data-theme="cream"] {
+  --bg: #f7f3eb;
+  --surface: #fffdf8;
+  --ink: #292820;
+  --muted: #777367;
+  --line: #e7e0d3;
+  --accent: #a47b50;
+}
+
+.insights-shell[data-theme="sage"] {
+  --bg: #edf1e9;
+  --surface: #f9fbf6;
+  --ink: #29352d;
+  --muted: #6d796f;
+  --line: #d9e2d6;
+  --accent: #66836c;
+}
+
+.insights-shell[data-theme="dusk"] {
+  --bg: #20232d;
+  --surface: #2c303d;
+  --ink: #f0f0f5;
+  --muted: #b0b3c2;
+  --line: #414656;
+  --accent: #a99be8;
+}
+
+.insights-shell {
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.insights-shell .card {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.insights-shell .muted,
+.insights-shell .page-sub {
+  color: var(--muted);
+}
+
+.insights-shell [hidden] {
+  display: none !important;
+}
     --bg:#F7F4EE;
     --surface:#FFFFFF;
     --surface-2:#FCFAF6;
