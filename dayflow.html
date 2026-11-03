@@ -1925,6 +1925,7 @@ function resetInsightsPrefs() {
   render();
 }
   function renderInsights(){
+        var prefs = getInsightsPrefs();
     var t = todayStr();
     var weekStart = startOfWeek(t);
     var days = [];
@@ -1960,7 +1961,29 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
 
     var h = '<div class="page-head">' +
       '<div class="page-title">Insights</div>' +
-      '<div class="page-sub">Understand your progress and see how your daily actions add up.</div></div>';
+          '<div class="page-sub">Understand your progress and see how your daily actions add up.</div></div>';
+
+    h += '<div class="insights-shell" data-theme="' + prefs.theme + '">';
+
+    h += '<div class="card" style="margin-top:16px">' +
+      '<div class="card-head"><div class="card-title">Make it yours</div></div>' +
+      '<p class="small muted">Choose your look and the sections you want to see.</p>' +
+      '<div style="margin:12px 0">' +
+      '<b class="small">Theme</b>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+      '<button type="button" onclick="DF.setInsightsTheme(\\'cream\\')">Cream</button>' +
+      '<button type="button" onclick="DF.setInsightsTheme(\\'sage\\')">Sage</button>' +
+      '<button type="button" onclick="DF.setInsightsTheme(\\'dusk\\')">Dusk</button>' +
+      '</div></div>' +
+      '<b class="small">Dashboard sections</b>' +
+      '<div style="display:grid;gap:8px;margin-top:8px">' +
+      '<label><input type="checkbox" ' + (prefs.visible.weekly ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'weekly\\',this.checked)"> Weekly task activity</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.routines ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'routines\\',this.checked)"> Routine consistency</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.goals ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'goals\\',this.checked)"> Goal progress</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.note ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'note\\',this.checked)"> Your insight</label>' +
+      '</div>' +
+      '<button type="button" style="margin-top:14px" onclick="DF.resetInsightsPrefs()">Reset preferences</button>' +
+      '</div>';
 
     h += '<div class="grid grid-3">' +
       statCard(weekTasks,"tasks completed this week") +
