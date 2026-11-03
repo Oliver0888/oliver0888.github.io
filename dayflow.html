@@ -1855,6 +1855,75 @@ days.forEach(function(d){
     /* =====================================================================
      INSIGHTS
      ===================================================================== */
+  var INSIGHTS_PREFS_KEY = "dayflow.insights.preferences.v1";
+
+function getInsightsPrefs() {
+  var defaults = {
+    theme: "cream",
+    visible: {
+      weekly: true,
+      routines: true,
+      goals: true,
+      note: true
+    }
+  };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(INSIGHTS_PREFS_KEY) || "null");
+
+    if (saved && saved.visible) {
+      if (saved.theme === "cream" || saved.theme === "sage" || saved.theme === "dusk") {
+        defaults.theme = saved.theme;
+      }
+
+      defaults.visible.weekly = saved.visible.weekly !== false;
+      defaults.visible.routines = saved.visible.routines !== false;
+      defaults.visible.goals = saved.visible.goals !== false;
+      defaults.visible.note = saved.visible.note !== false;
+    }
+  } catch (error) {
+    // Keep the default preferences if saved data cannot be read.
+  }
+
+  return defaults;
+}
+
+function saveInsightsPrefs(prefs) {
+  try {
+    localStorage.setItem(INSIGHTS_PREFS_KEY, JSON.stringify(prefs));
+  } catch (error) {
+    // Preferences remain available for the current session.
+  }
+}
+
+function setInsightsTheme(theme) {
+  if (theme !== "cream" && theme !== "sage" && theme !== "dusk") return;
+
+  var prefs = getInsightsPrefs();
+  prefs.theme = theme;
+  saveInsightsPrefs(prefs);
+  render();
+}
+
+function toggleInsightsCard(card, visible) {
+  var prefs = getInsightsPrefs();
+
+  if (Object.prototype.hasOwnProperty.call(prefs.visible, card)) {
+    prefs.visible[card] = !!visible;
+    saveInsightsPrefs(prefs);
+    render();
+  }
+}
+
+function resetInsightsPrefs() {
+  try {
+    localStorage.removeItem(INSIGHTS_PREFS_KEY);
+  } catch (error) {
+    // Defaults will be used if storage is unavailable.
+  }
+
+  render();
+}
   function renderInsights(){
     var t = todayStr();
     var weekStart = startOfWeek(t);
