@@ -10,8 +10,39 @@
   /* ============================================================
      DayFlow design system — tokens
      ============================================================ */
-  :root{ 
-    /* Insights personalisation themes */
+:root{
+    --bg:#F7F4EE;
+    --surface:#FFFFFF;
+    --surface-2:#FCFAF6;
+    --ink:#2A2C28;
+    --muted:#6E6B62;
+    --line:#E7E2D8;
+
+    --forest:#2F4A34;      /* primary */
+    --forest-hover:#263D2A;
+    --forest-soft:#E4EDE3;
+
+    --sage:#6F9A6A;        /* secondary */
+    --sage-soft:#E8F0E5;
+
+    --sky:#4F84BD;
+    --sky-soft:#E7EFF9;
+
+    --lav:#7E6FC4;
+    --lav-soft:#EEEAF9;
+
+    --peach:#C07A45;
+    --peach-soft:#FBEDE1;
+
+    --danger:#B5544F;
+    --danger-soft:#FAEAEA;
+
+    --shadow:0 1px 2px rgba(42,44,40,.04), 0 10px 26px -16px rgba(42,44,40,.28);
+    --shadow-lg:0 18px 50px -20px rgba(42,44,40,.35);
+    --r-lg:20px; --r-md:14px; --r-sm:10px;
+    --sidebar:248px;
+  }
+      /* Insights personalisation themes */
 .insights-shell[data-theme="cream"] {
   --bg: #f7f3eb;
   --surface: #fffdf8;
@@ -60,38 +91,8 @@
 .insights-shell [hidden] {
   display: none !important;
 }
-    --bg:#F7F4EE;
-    --surface:#FFFFFF;
-    --surface-2:#FCFAF6;
-    --ink:#2A2C28;
-    --muted:#6E6B62;
-    --line:#E7E2D8;
 
-    --forest:#2F4A34;      /* primary */
-    --forest-hover:#263D2A;
-    --forest-soft:#E4EDE3;
-
-    --sage:#6F9A6A;        /* secondary */
-    --sage-soft:#E8F0E5;
-
-    --sky:#4F84BD;
-    --sky-soft:#E7EFF9;
-
-    --lav:#7E6FC4;
-    --lav-soft:#EEEAF9;
-
-    --peach:#C07A45;
-    --peach-soft:#FBEDE1;
-
-    --danger:#B5544F;
-    --danger-soft:#FAEAEA;
-
-    --shadow:0 1px 2px rgba(42,44,40,.04), 0 10px 26px -16px rgba(42,44,40,.28);
-    --shadow-lg:0 18px 50px -20px rgba(42,44,40,.35);
-    --r-lg:20px; --r-md:14px; --r-sm:10px;
-    --sidebar:248px;
-  }
-  *{box-sizing:border-box}
+*{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
     background:var(--bg);
@@ -1971,16 +1972,16 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
       '<div style="margin:12px 0">' +
       '<b class="small">Theme</b>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
-      '<button type="button" onclick="DF.setInsightsTheme(\\'cream\\')">Cream</button>' +
-      '<button type="button" onclick="DF.setInsightsTheme(\\'sage\\')">Sage</button>' +
-      '<button type="button" onclick="DF.setInsightsTheme(\\'dusk\\')">Dusk</button>' +
+      '<button type="button" onclick="DF.setInsightsTheme(\'cream\')">Cream</button>' +
+      '<button type="button" onclick="DF.setInsightsTheme(\'sage\')">Sage</button>' +
+      '<button type="button" onclick="DF.setInsightsTheme(\'dusk\')">Dusk</button>' +
       '</div></div>' +
       '<b class="small">Dashboard sections</b>' +
       '<div style="display:grid;gap:8px;margin-top:8px">' +
-      '<label><input type="checkbox" ' + (prefs.visible.weekly ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'weekly\\',this.checked)"> Weekly task activity</label>' +
-      '<label><input type="checkbox" ' + (prefs.visible.routines ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'routines\\',this.checked)"> Routine consistency</label>' +
-      '<label><input type="checkbox" ' + (prefs.visible.goals ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'goals\\',this.checked)"> Goal progress</label>' +
-      '<label><input type="checkbox" ' + (prefs.visible.note ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\\'note\\',this.checked)"> Your insight</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.weekly ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\'weekly\',this.checked)"> Weekly task activity</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.routines ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\'routines\',this.checked)"> Routine consistency</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.goals ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\'goals\',this.checked)"> Goal progress</label>' +
+      '<label><input type="checkbox" ' + (prefs.visible.note ? 'checked' : '') + ' onchange="DF.toggleInsightsCard(\'note\',this.checked)"> Your insight</label>' +
       '</div>' +
       '<button type="button" style="margin-top:14px" onclick="DF.resetInsightsPrefs()">Reset preferences</button>' +
       '</div>';
@@ -2007,15 +2008,14 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
     });
 
     h += '</div>';
+if(weekTasks === 0){
+  h += '<p class="small muted" style="text-align:center;margin-top:12px">Your completed tasks will appear here as you work through your week.</p>';
+}
 
-    if(weekTasks === 0){
-      h += '<p class="small muted" style="text-align:center;margin-top:12px">Your completed tasks will appear here as you work through your week.</p>';
-    }
+h += '</div>';
+h += '</div>';
 
-    h += '</div>';
-
-    h += '<div' + (prefs.visible.routines ? '' : ' hidden') + '>';
-
+h += '<div' + (prefs.visible.routines ? '' : ' hidden') + '>';
     h += '<div class="card" style="margin-top:16px">' +
       '<div class="card-head"><div class="card-title">Routine consistency</div></div>';
     h += summaryRow(
