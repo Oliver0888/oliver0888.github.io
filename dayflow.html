@@ -1985,7 +1985,8 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
       '<button type="button" style="margin-top:14px" onclick="DF.resetInsightsPrefs()">Reset preferences</button>' +
       '</div>';
 
-    h += '<div class="grid grid-3">' +
+     h += '<div' + (prefs.visible.weekly ? '' : ' hidden') + '>';
+      h += '<div class="grid grid-3">' +
       statCard(weekTasks,"tasks completed this week") +
       statCard(routineRate + "%","routine consistency") +
       statCard(goalAverage + "%","average goal progress") +
