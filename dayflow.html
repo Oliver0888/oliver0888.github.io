@@ -2014,9 +2014,10 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
 
     h += '</div>';
 
+    h += '<div' + (prefs.visible.routines ? '' : ' hidden') + '>';
+
     h += '<div class="card" style="margin-top:16px">' +
       '<div class="card-head"><div class="card-title">Routine consistency</div></div>';
-
     h += summaryRow(
       "Routine steps completed",
       routineDone + " of " + routineTotal,
@@ -2029,7 +2030,8 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
     }
 
     h += '</div>';
-
+    h += '</div>';
+    h += '<div' + (prefs.visible.goals ? '' : ' hidden') + '>';
     h += '<div class="card" style="margin-top:16px">' +
       '<div class="card-head"><div class="card-title">Your goals</div>' +
       '<span class="small muted">' + completedGoals + ' completed</span></div>';
@@ -2049,6 +2051,7 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
     }
 
     h += '</div>';
+    h += '</div>';
 
     var observation;
 
@@ -2067,13 +2070,16 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
       observation = "Your current goals have an average progress of " +
         goalAverage + "%. Keep taking manageable steps.";
     }
-
+    h += '<div' + (prefs.visible.note ? '' : ' hidden') + '>';
     h += '<div class="card" style="margin-top:16px;background:linear-gradient(120deg,var(--sage-soft),var(--sky-soft))">' +
       '<div style="display:flex;gap:12px;align-items:flex-start">' +
       '<div style="color:var(--forest)">' + icon("sparkle","22") + '</div>' +
       '<div><b style="font-size:14px">Your insight</b>' +
       '<p style="margin:4px 0 0;font-size:13.5px;color:#4A4741">' +
       esc(observation) + '</p></div></div></div>';
+    
+     h += '</div>';
+     h += '</div>'; 
 
     return h;
   }
@@ -2315,7 +2321,7 @@ days.filter(function(d){ return d <= t; }).forEach(function(d){
 else if(ui.tab === "insights") view.innerHTML = renderInsights();
 }
 
-  /* ---------- Expose handlers ---------- */
+   /* ---------- Expose handlers ---------- */
   window.DF = {
     go: go, closeModal: closeModal, toast: toast,
     addTask: addTask, editTask: editTask, toggleTask: toggleTask, deleteTask: deleteTask, moveTask: moveTask,
@@ -2333,9 +2339,12 @@ else if(ui.tab === "insights") view.innerHTML = renderInsights();
     deleteListItem: deleteListItem, reorderListItem: reorderListItem,
     openSettings: openSettings, exportData: exportData, importData: importData, resetAll: resetAll,
     openPricing: openPricing, openPrivacy: openPrivacy, openFeedback: openFeedback, shareApp: shareApp,
+    setInsightsTheme: setInsightsTheme,
+    toggleInsightsCard: toggleInsightsCard,
+    resetInsightsPrefs: resetInsightsPrefs,
     showWelcome: showWelcome, startTour: startTour, finishOnboarding: finishOnboarding
   };
-
+  
   /* ---------- Boot ---------- */
   function boot(){
     var saved = loadRaw();
