@@ -2044,13 +2044,12 @@ h += '<div' + (prefs.visible.routines ? '' : ' hidden') + '>';
         goalAverage + "%. Keep taking manageable steps.";
     }
     h += '<div' + (prefs.visible.note ? '' : ' hidden') + '>';
-    h += '<div class="card" style="margin-top:16px;background:linear-gradient(120deg,var(--sage-soft),var(--sky-soft))">' +
-      '<div style="display:flex;gap:12px;align-items:flex-start">' +
-      '<div style="color:var(--forest)">' + icon("sparkle","22") + '</div>' +
-      '<div><b style="font-size:14px">Your insight</b>' +
-      '<p style="margin:4px 0 0;font-size:13.5px;color:#4A4741">' +
-      esc(observation) + '</p></div></div></div>';
-    
+   h += '<div class="card" style="margin-top:16px;background:linear-gradient(120deg,var(--surface),var(--bg));color:var(--ink)">' +
+  '<div style="display:flex;gap:12px;align-items:flex-start">' +
+  '<div style="color:var(--accent)">' + icon("sparkle","22") + '</div>' +
+  '<div><b style="font-size:14px;color:var(--ink)">Your insight</b>' +
+  '<p style="margin:4px 0 0;font-size:13.5px;color:var(--ink)">' +
+  esc(observation) + '</p></div></div></div>';
      h += '</div>';
      h += '</div>'; 
 
