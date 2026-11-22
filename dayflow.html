@@ -452,6 +452,60 @@
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;transition-duration:.001ms !important}
   }
+/* iPad layout safeguards */
+#view,
+#view > *,
+#view .card,
+#view .grid,
+#view .grid > * {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#view .rout-item,
+#view .list-item,
+#view .step {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#view .rout-item .txt,
+#view .list-item .txt,
+#view .step .txt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#view .mini-actions {
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+#view .days {
+  max-width: 100%;
+}
+
+#view .inline-add,
+#view .quick-add {
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+#view .inline-add input,
+#view .quick-add input {
+  min-width: 0;
+  flex: 1 1 160px;
+}
+
+#view input,
+#view select,
+#view textarea {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
 </style>
 </head>
 <body>
